@@ -60,7 +60,8 @@ export async function POST(request: NextRequest) {
       : "Erro ao processar solicitação."
 
     return NextResponse.json(
-      { error: msg },
+        //debug info is included in the response for easier troubleshooting, but it should be ignored by the client
+      { error: msg, _debug: { code: firebaseError.code, message: firebaseError.message } },
       { status: 500 }
     )
   }
