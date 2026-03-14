@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react"
 import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,7 +13,7 @@ import { Shield, ArrowLeft, Lock, Eye, EyeOff, CheckCircle, XCircle } from "luci
 import { toast } from "sonner"
 
 function RedefinirSenhaContent() {
-  const router = useRouter()
+  // const router = useRouter()
   const searchParams = useSearchParams()
   const { confirmReset } = useAuth()
   
@@ -54,7 +54,9 @@ function RedefinirSenhaContent() {
       await confirmReset(oobCode!, formData.password)
       setSuccess(true)
       toast.success("Senha redefinida com sucesso!")
-    } catch {
+    } catch (err: unknown) {
+      const fbErr = err as { code?: string; message?: string }
+      console.error("Erro ao redefinir senha:", fbErr.code, fbErr.message)
       toast.error("Erro ao redefinir senha. O link pode ter expirado.")
       setError(true)
     } finally {
@@ -73,7 +75,7 @@ function RedefinirSenhaContent() {
             Link Invalido
           </CardTitle>
           <CardDescription className="text-base">
-            Este link de recuperacao e invalido ou expirou.
+            Este link de recuperação e invalido ou expirou.
           </CardDescription>
         </CardHeader>
         <CardContent>

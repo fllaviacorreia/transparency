@@ -26,9 +26,11 @@ export function useTransactions(projectId: string | null) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!user || !projectId) {
-      setTransactions([])
-      setLoading(false)
+    if (!user || !projectId || !db) {
+      Promise.resolve().then(() => {
+        setTransactions([])
+        setLoading(false)
+      })
       return
     }
 
@@ -51,7 +53,13 @@ export function useTransactions(projectId: string | null) {
       },
       (err) => {
         console.error("Error fetching transactions:", err)
-        setError("Erro ao carregar transacoes")
+        const errMsg = (err as { message?: string }).message || ""
+        if (errMsg.includes("index")) {
+          const match = errMsg.match(/(https:\/\/[^\s]+)/)
+          setError(match ? `Índice necessário: ${match[1]}` : "Índice composto necessário no Firestore")
+        } else {
+          setError("Erro ao carregar transacoes")
+        }
         setLoading(false)
       }
     )
@@ -62,12 +70,19 @@ export function useTransactions(projectId: string | null) {
   const uploadReceipt = useCallback(
     async (file: File): Promise<{ url: string; name: string }> => {
       if (!user) throw new Error("Usuario nao autenticado")
+      if (!storage) throw new Error("Storage nao configurado")
 
       const timestamp = Date.now()
       const fileName = `${timestamp}-${file.name}`
       const storageRef = ref(storage, `receipts/${user.uid}/${fileName}`)
 
-      await uploadBytes(storageRef, file)
+      const metadata = {
+        customMetadata: {
+          ownerId: user.uid,
+        },
+      }
+
+      await uploadBytes(storageRef, file, metadata)
       const url = await getDownloadURL(storageRef)
 
       return { url, name: file.name }
@@ -85,6 +100,7 @@ export function useTransactions(projectId: string | null) {
       receipt?: File
     }) => {
       if (!user) throw new Error("Usuario nao autenticado")
+      if (!db) throw new Error("Firestore nao configurado")
 
       let receiptUrl: string | undefined
       let receiptName: string | undefined
@@ -122,9 +138,10 @@ export function useTransactions(projectId: string | null) {
   const deleteTransaction = useCallback(
     async (transaction: Transaction) => {
       if (!user) throw new Error("Usuario nao autenticado")
+      if (!db) throw new Error("Firestore nao configurado")
 
       // Delete receipt from storage if exists
-      if (transaction.receiptUrl) {
+      if (transaction.receiptUrl && storage) {
         try {
           const storageRef = ref(storage, transaction.receiptUrl)
           await deleteObject(storageRef)

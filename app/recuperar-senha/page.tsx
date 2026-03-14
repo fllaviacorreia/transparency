@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,11 +13,18 @@ import { Shield, ArrowLeft, Mail, CheckCircle } from "lucide-react"
 import { toast } from "sonner"
 
 export default function RecuperarSenhaPage() {
-  const { resetPassword } = useAuth()
+  const router = useRouter()
+  const { resetPassword, user, loading } = useAuth()
   
   const [isLoading, setIsLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
   const [email, setEmail] = useState("")
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace("/dashboard")
+    }
+  }, [user, loading, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,7 +33,7 @@ export default function RecuperarSenhaPage() {
     try {
       await resetPassword(email)
       setEmailSent(true)
-      toast.success("E-mail de recuperacao enviado!")
+      toast.success("E-mail de recuperação enviado!")
     } catch (error: unknown) {
       const firebaseError = error as { code?: string }
       
@@ -78,7 +86,7 @@ export default function RecuperarSenhaPage() {
             <CardDescription className="text-base">
               {emailSent
                 ? "Verifique sua caixa de entrada e siga as instrucoes"
-                : "Digite seu e-mail para receber o link de recuperacao"}
+                : "Digite seu e-mail para receber o link de recuperação"}
             </CardDescription>
           </CardHeader>
 
@@ -122,7 +130,7 @@ export default function RecuperarSenhaPage() {
                       Enviando...
                     </>
                   ) : (
-                    "Enviar Link de Recuperacao"
+                    "Enviar Link de Recuperação"
                   )}
                 </Button>
               </form>
