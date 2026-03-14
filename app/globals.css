@@ -38,7 +38,7 @@
   --sidebar-border: oklch(0.90 0.01 240);
   --sidebar-ring: oklch(0.55 0.15 160);
   
-  /* Custom colors for Transpareny */
+  /* Custom colors for Transparency */
   --success: oklch(0.55 0.15 160);
   --success-foreground: oklch(0.99 0 0);
   --warning: oklch(0.75 0.15 80);
@@ -81,7 +81,7 @@
   --sidebar-border: oklch(0.25 0.02 240);
   --sidebar-ring: oklch(0.60 0.15 160);
   
-  /* Custom colors for Transpareny */
+  /* Custom colors for Transparency */
   --success: oklch(0.60 0.15 160);
   --success-foreground: oklch(0.12 0.02 160);
   --warning: oklch(0.75 0.15 80);

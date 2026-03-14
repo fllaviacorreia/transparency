@@ -11,7 +11,7 @@ export function Footer() {
               <Shield className="h-4 w-4 text-primary-foreground" />
             </div>
             <span className="font-display text-lg font-bold tracking-tight">
-              Transpareny
+              Transparency
             </span>
           </Link>
 
@@ -45,7 +45,7 @@ export function Footer() {
 
         <div className="mt-8 border-t border-border pt-8 text-center">
           <p className="text-sm text-muted-foreground">
-            {new Date().getFullYear()} Transpareny. Todos os direitos reservados.
+            {new Date().getFullYear()} Transparency. Todos os direitos reservados.
           </p>
         </div>
       </div>

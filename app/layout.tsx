@@ -17,7 +17,7 @@ const spaceGrotesk = Space_Grotesk({
 })
 
 export const metadata: Metadata = {
-  title: 'Transpareny - Gestão Financeira Transparente',
+  title: 'Transparency - Gestão Financeira Transparente',
   description: 'Gerencie suas finanças com total transparência. Controle entradas e saídas de múltiplos projetos com segurança e simplicidade.',
   generator: 'v0.app',
 }

@@ -77,7 +77,7 @@ export default function LoginPage() {
               <Shield className="h-5 w-5 text-primary-foreground" />
             </div>
             <span className="font-display text-xl font-bold tracking-tight">
-              Transpareny
+              Transparency
             </span>
           </Link>
           <Button variant="ghost" size="sm" asChild>

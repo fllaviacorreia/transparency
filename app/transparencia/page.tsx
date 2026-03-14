@@ -203,7 +203,7 @@ function TransparenciaContent() {
               <Shield className="h-5 w-5 text-primary-foreground" />
             </div>
             <span className="font-display text-xl font-bold tracking-tight">
-              Transpareny
+              Transparency
             </span>
           </Link>
           <Button variant="ghost" size="sm" asChild>
@@ -439,7 +439,7 @@ function TransparenciaContent() {
       <footer className="border-t border-border bg-card px-4 py-6 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl text-center">
           <p className="text-sm text-muted-foreground">
-            Dados atualizados em tempo real. {new Date().getFullYear()} Transpareny.
+            Dados atualizados em tempo real. {new Date().getFullYear()} Transparency.
           </p>
         </div>
       </footer>
