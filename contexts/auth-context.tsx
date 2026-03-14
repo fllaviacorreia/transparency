@@ -10,7 +10,7 @@ import {
   type User,
 } from "firebase/auth"
 import { doc, setDoc, serverTimestamp } from "firebase/firestore"
-import { auth, db, isFirebaseConfigured } from "@/lib/firebase"
+import { auth, db, isFirebaseConfigured, initFirebase, type FirebaseConfig } from "@/lib/firebase"
 
 interface AuthContextType {
   user: User | null
@@ -25,9 +25,12 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children, firebaseConfig }: { children: ReactNode; firebaseConfig: FirebaseConfig }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+
+  // Inicializa o Firebase com a config recebida do server
+  initFirebase(firebaseConfig)
 
   useEffect(() => {
     if (!isFirebaseConfigured || !auth) {

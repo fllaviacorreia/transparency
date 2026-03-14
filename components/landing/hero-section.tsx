@@ -7,8 +7,8 @@ export function HeroSection() {
     <section className="relative overflow-hidden bg-background px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-32">
       {/* Background Pattern */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute left-1/2 top-0 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute bottom-0 right-0 h-[400px] w-[400px] translate-x-1/4 translate-y-1/4 rounded-full bg-primary/10 blur-3xl" />
+        <div className="absolute left-1/2 top-0 h-150 w-150 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/5 blur-3xl" />
+        <div className="absolute bottom-0 right-0 h-100 w-100 translate-x-1/4 translate-y-1/4 rounded-full bg-primary/10 blur-3xl" />
       </div>
 
       <div className="mx-auto max-w-7xl">
