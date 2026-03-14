@@ -1,9 +1,11 @@
 "use client"
 
+import { useState } from "react"
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useAuth } from "@/contexts/auth-context"
+import { ProfileModal } from "@/components/dashboard/profile-modal"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import {
@@ -19,7 +21,8 @@ import {
   Eye, 
   User, 
   LogOut,
-  ChevronDown
+  ChevronDown,
+  UserCog
 } from "lucide-react"
 
 export default function DashboardLayout({
@@ -29,6 +32,7 @@ export default function DashboardLayout({
 }) {
   const router = useRouter()
   const { user, loading, signOut } = useAuth()
+  const [profileOpen, setProfileOpen] = useState(false)
 
   useEffect(() => {
     if (!loading && !user) {
@@ -108,6 +112,14 @@ export default function DashboardLayout({
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setProfileOpen(true)}
+                className="cursor-pointer"
+              >
+                <UserCog className="mr-2 h-4 w-4" />
+                Perfil
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem 
                 onClick={handleSignOut}
                 className="cursor-pointer text-destructive focus:text-destructive"
@@ -126,6 +138,8 @@ export default function DashboardLayout({
           {children}
         </div>
       </main>
+
+      <ProfileModal open={profileOpen} onOpenChange={setProfileOpen} />
     </div>
   )
 }

@@ -47,6 +47,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (email: string, password: string) => {
     if (!auth) throw new Error("Firebase não configurado")
     await signInWithEmailAndPassword(auth, email, password)
+
+    // Notificação de login (fire-and-forget)
+    fetch("/api/auth/login-notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    }).catch(() => {})
   }
 
   const signUp = async (email: string, password: string, name: string) => {
@@ -60,6 +67,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       createdAt: serverTimestamp(),
       projectsCount: 0,
     })
+
+    // E-mail de boas-vindas (fire-and-forget)
+    fetch("/api/auth/welcome", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, name }),
+    }).catch(() => {})
   }
 
   const signOut = async () => {
