@@ -54,8 +54,13 @@ export async function POST(request: NextRequest) {
     }
 
     console.error("Erro ao gerar link de reset:", firebaseError.code, firebaseError.message)
+
+    const msg = (firebaseError.message || "").includes("RESET_PASSWORD_EXCEED_LIMIT")
+      ? "Muitas tentativas. Aguarde alguns minutos e tente novamente."
+      : "Erro ao processar solicitação."
+
     return NextResponse.json(
-      { error: "Erro ao processar solicitação.", debug: { code: firebaseError.code, message: firebaseError.message } },
+      { error: msg },
       { status: 500 }
     )
   }

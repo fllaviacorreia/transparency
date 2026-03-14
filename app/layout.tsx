@@ -1,6 +1,6 @@
+import { Analytics } from "@vercel/analytics/next"
 import type { Metadata } from 'next'
 import { Inter, Space_Grotesk } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
 import { AuthProvider } from '@/contexts/auth-context'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
