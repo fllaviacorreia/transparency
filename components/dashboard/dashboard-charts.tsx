@@ -128,7 +128,7 @@ export function DashboardCharts({ transactions, totals }: DashboardChartsProps) 
               Sem dados para exibir
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height={320}>
               <PieChart>
                 <Pie
                   data={pieData}
