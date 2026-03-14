@@ -53,9 +53,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.error("Erro ao gerar link de reset:", firebaseError.message)
+    console.error("Erro ao gerar link de reset:", firebaseError.code, firebaseError.message)
     return NextResponse.json(
-      { error: "Erro ao processar solicitação." },
+      { error: "Erro ao processar solicitação.", debug: { code: firebaseError.code, message: firebaseError.message } },
       { status: 500 }
     )
   }
