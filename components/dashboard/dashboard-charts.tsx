@@ -24,7 +24,7 @@ const COLORS = {
 
 const paymentMethodLabels: Record<PaymentMethod, string> = {
   pix: "PIX",
-  cartao: "Cartao",
+  cartao: "Cartão",
   dinheiro: "Dinheiro",
 }
 
@@ -62,7 +62,7 @@ export function DashboardCharts({ transactions, totals }: DashboardChartsProps) 
   // Data for bar chart (income vs expense)
   const barData = [
     { name: "Entradas", value: totals.income, color: COLORS.income },
-    { name: "Saidas", value: totals.expense, color: COLORS.expense },
+    { name: "Saídas", value: totals.expense, color: COLORS.expense },
   ]
 
   const isPositive = totals.balance >= 0
@@ -91,7 +91,7 @@ export function DashboardCharts({ transactions, totals }: DashboardChartsProps) 
               <TrendingDown className="h-6 w-6 text-expense" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Total Saidas</p>
+              <p className="text-sm text-muted-foreground">Total Saídas</p>
               <p className="text-2xl font-bold text-expense">
                 {formatCurrency(totals.expense)}
               </p>
@@ -120,11 +120,11 @@ export function DashboardCharts({ transactions, totals }: DashboardChartsProps) 
       <Card className="border-border/50">
         <CardHeader>
           <CardTitle>Por Forma de Pagamento</CardTitle>
-          <CardDescription>Distribuicao das transacoes por metodo</CardDescription>
+          <CardDescription>Distribuição das transações por método</CardDescription>
         </CardHeader>
         <CardContent>
           {pieData.length === 0 ? (
-            <div className="flex h-[250px] items-center justify-center text-muted-foreground">
+            <div className="flex h-62.5 items-center justify-center text-muted-foreground">
               Sem dados para exibir
             </div>
           ) : (
@@ -165,12 +165,12 @@ export function DashboardCharts({ transactions, totals }: DashboardChartsProps) 
       {/* Bar Chart - Income vs Expense */}
       <Card className="border-border/50">
         <CardHeader>
-          <CardTitle>Entradas vs Saidas</CardTitle>
+          <CardTitle>Entradas vs Saídas</CardTitle>
           <CardDescription>Comparativo de valores totais</CardDescription>
         </CardHeader>
         <CardContent>
           {totals.income === 0 && totals.expense === 0 ? (
-            <div className="flex h-[250px] items-center justify-center text-muted-foreground">
+            <div className="flex h-62.5 items-center justify-center text-muted-foreground">
               Sem dados para exibir
             </div>
           ) : (

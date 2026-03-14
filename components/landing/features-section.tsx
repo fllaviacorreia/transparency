@@ -11,39 +11,39 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 const features = [
   {
     icon: FolderKanban,
-    title: "Multiplos Projetos",
+    title: "Múltiplos Projetos",
     description:
-      "Gerencie ate 5 projetos simultaneamente, cada um com seu proprio controle financeiro independente.",
+      "Gerencie até 5 projetos simultaneamente, cada um com seu próprio controle financeiro independente.",
   },
   {
     icon: Receipt,
-    title: "Entradas e Saidas",
+    title: "Entradas e Saídas",
     description:
-      "Registre todas as suas transacoes com detalhes como valor, forma de pagamento e descricao.",
+      "Registre todas as suas transações com detalhes como valor, forma de pagamento e descrição.",
   },
   {
     icon: Upload,
     title: "Comprovantes",
     description:
-      "Anexe comprovantes em imagem ou PDF para cada transacao. Tudo organizado e acessivel.",
+      "Anexe comprovantes em imagem ou PDF para cada transação. Tudo organizado e acessível.",
   },
   {
     icon: BarChart3,
-    title: "Graficos Intuitivos",
+    title: "Gráficos Intuitivos",
     description:
-      "Visualize suas financas com graficos de pizza e barras. Entenda para onde vai seu dinheiro.",
+      "Visualize suas finanças com gráficos de pizza e barras. Entenda para onde vai seu dinheiro.",
   },
   {
     icon: CreditCard,
     title: "Formas de Pagamento",
     description:
-      "Categorize por PIX, cartao ou dinheiro. Saiba exatamente como o dinheiro entra e sai.",
+      "Categorize por PIX, cartão ou dinheiro. Saiba exatamente como o dinheiro entra e sai.",
   },
   {
     icon: Lock,
-    title: "Seguranca",
+    title: "Segurança",
     description:
-      "Seus dados estao protegidos com autenticacao segura e criptografia de ponta a ponta.",
+      "Seus dados estão protegidos com autenticação segura e criptografia de ponta a ponta.",
   },
 ]
 
@@ -53,7 +53,7 @@ export function FeaturesSection() {
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Tudo que voce precisa para uma gestao transparente
+            Tudo que você precisa para uma gestão transparente
           </h2>
           <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
             Recursos pensados para simplificar sua vida financeira e manter 

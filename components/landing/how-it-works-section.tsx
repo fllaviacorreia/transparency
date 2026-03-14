@@ -11,19 +11,19 @@ const steps = [
     step: "02",
     icon: FolderPlus,
     title: "Adicione um projeto",
-    description: "Crie projetos para organizar suas financas por categoria ou objetivo.",
+    description: "Crie projetos para organizar suas finanças por categoria ou objetivo.",
   },
   {
     step: "03",
     icon: PlusCircle,
-    title: "Registre transacoes",
-    description: "Adicione entradas e saidas com valores, formas de pagamento e comprovantes.",
+    title: "Registre transações",
+    description: "Adicione entradas e saídas com valores, formas de pagamento e comprovantes.",
   },
   {
     step: "04",
     icon: BarChart3,
     title: "Acompanhe tudo",
-    description: "Visualize graficos e relatorios para tomar melhores decisoes.",
+    description: "Visualize gráficos e relatórios para tomar melhores decisões.",
   },
 ]
 
@@ -36,7 +36,7 @@ export function HowItWorksSection() {
             Como funciona
           </h2>
           <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-            Em poucos passos voce comeca a ter controle total das suas financas.
+            Em poucos passos você começa a ter controle total das suas finanças.
           </p>
         </div>
 

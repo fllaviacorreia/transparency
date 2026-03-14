@@ -7,10 +7,10 @@ export function CTASection() {
     <section className="bg-primary px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
       <div className="mx-auto max-w-4xl text-center">
         <h2 className="font-display text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl">
-          Pronto para ter controle total das suas financas?
+          Pronto para ter controle total das suas finanças?
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-primary-foreground/80">
-          Comece agora gratuitamente e experimente a tranquilidade de uma gestao 
+          Comece agora gratuitamente e experimente a tranquilidade de uma gestão 
           financeira verdadeiramente transparente.
         </p>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -31,7 +31,7 @@ export function CTASection() {
             asChild
             className="w-full border-primary-foreground/20 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground sm:w-auto"
           >
-            <Link href="/transparencia">Ver Demonstracao</Link>
+            <Link href="/transparencia">Ver Demonstração</Link>
           </Button>
         </div>
       </div>

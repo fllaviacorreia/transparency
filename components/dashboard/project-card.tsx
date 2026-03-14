@@ -20,7 +20,8 @@ import {
   Eye,
   EyeOff,
   Copy,
-  Check
+  Check,
+  Share2
 } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
@@ -33,6 +34,7 @@ interface ProjectCardProps {
   onEdit: () => void
   onDelete: () => void
   onToggleVisibility: (isPublic: boolean) => void
+  onShare: () => void
 }
 
 function formatCurrency(value: number) {
@@ -49,17 +51,33 @@ export function ProjectCard({
   onEdit,
   onDelete,
   onToggleVisibility,
+  onShare,
 }: ProjectCardProps) {
   const [copied, setCopied] = useState(false)
   const balance = (project.totalIncome || 0) - (project.totalExpense || 0)
   const isPositive = balance >= 0
 
-  const copyCode = (e: React.MouseEvent) => {
+  const copyCode = async (e: React.MouseEvent) => {
     e.stopPropagation()
-    navigator.clipboard.writeText(project.publicCode || "")
-    setCopied(true)
-    toast.success("Codigo copiado!")
-    setTimeout(() => setCopied(false), 2000)
+    try {
+      await navigator.clipboard.writeText(project.publicCode || "")
+      setCopied(true)
+      toast.success("Código copiado!")
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // Fallback for non-HTTPS contexts
+      const textArea = document.createElement("textarea")
+      textArea.value = project.publicCode || ""
+      textArea.style.position = "fixed"
+      textArea.style.opacity = "0"
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand("copy")
+      document.body.removeChild(textArea)
+      setCopied(true)
+      toast.success("Código copiado!")
+      setTimeout(() => setCopied(false), 2000)
+    }
   }
 
   return (
@@ -73,7 +91,7 @@ export function ProjectCard({
         <div className="min-w-0 flex-1">
           <CardTitle className="truncate text-lg">{project.title}</CardTitle>
           <CardDescription className="mt-1 line-clamp-2">
-            {project.description || "Sem descricao"}
+            {project.description || "Sem descrição"}
           </CardDescription>
           {project.publicCode && (
             <div className="mt-2 flex items-center gap-2">
@@ -96,7 +114,7 @@ export function ProjectCard({
                 {project.isPublic ? (
                   <>
                     <Eye className="mr-1 h-3 w-3" />
-                    Publico
+                    Público
                   </>
                 ) : (
                   <>
@@ -138,9 +156,18 @@ export function ProjectCard({
               ) : (
                 <>
                   <Eye className="mr-2 h-4 w-4" />
-                  Tornar Publico
+                  Tornar Público
                 </>
               )}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                onShare()
+              }}
+            >
+              <Share2 className="mr-2 h-4 w-4" />
+              Compartilhar
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -172,7 +199,7 @@ export function ProjectCard({
           <div className="space-y-1">
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <TrendingDown className="h-3 w-3 text-expense" />
-              Saidas
+              Saídas
             </div>
             <p className="font-semibold text-expense">
               {formatCurrency(project.totalExpense || 0)}

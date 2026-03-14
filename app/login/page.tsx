@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
@@ -15,7 +15,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export default function LoginPage() {
   const router = useRouter()
-  const { signIn, signUp, isConfigured } = useAuth()
+  const { signIn, signUp, isConfigured, user, loading } = useAuth()
   
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -26,6 +26,12 @@ export default function LoginPage() {
     password: "",
     name: "",
   })
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace("/dashboard")
+    }
+  }, [user, loading, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,11 +52,11 @@ export default function LoginPage() {
       // Check if it's a new user error
       if (firebaseError.code === "auth/user-not-found" || firebaseError.code === "auth/invalid-credential") {
         setIsNewUser(true)
-        toast.info("E-mail nao cadastrado. Preencha seu nome para criar uma conta.")
+        toast.info("E-mail não cadastrado. Preencha seu nome para criar uma conta.")
       } else if (firebaseError.code === "auth/wrong-password") {
         toast.error("Senha incorreta.")
       } else if (firebaseError.code === "auth/email-already-in-use") {
-        toast.error("Este e-mail ja esta em uso.")
+        toast.error("Este e-mail já está em uso.")
       } else if (firebaseError.code === "auth/weak-password") {
         toast.error("A senha deve ter pelo menos 6 caracteres.")
       } else {
@@ -95,7 +101,7 @@ export default function LoginPage() {
             </CardTitle>
             <CardDescription className="text-base">
               {isNewUser
-                ? "Complete seu cadastro para comecar"
+                ? "Complete seu cadastro para começar"
                 : "Digite seu e-mail e senha para entrar"}
             </CardDescription>
           </CardHeader>
@@ -104,9 +110,9 @@ export default function LoginPage() {
             {!isConfigured && (
               <Alert variant="destructive" className="mb-4">
                 <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Firebase nao configurado</AlertTitle>
+                <AlertTitle>Firebase não configurado</AlertTitle>
                 <AlertDescription>
-                  Configure as variaveis de ambiente do Firebase para habilitar o login.
+                  Configure as variáveis de ambiente do Firebase para habilitar o login.
                 </AlertDescription>
               </Alert>
             )}
@@ -205,7 +211,7 @@ export default function LoginPage() {
                   className="w-full"
                   onClick={() => setIsNewUser(false)}
                 >
-                  Ja tenho uma conta
+                  Já tenho uma conta
                 </Button>
               )}
             </form>

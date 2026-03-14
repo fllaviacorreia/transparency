@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Empty } from "@/components/ui/empty"
+import { Empty, EmptyMedia, EmptyHeader, EmptyTitle, EmptyDescription } from "@/components/ui/empty"
 import { Spinner } from "@/components/ui/spinner"
 import {
   AlertDialog,
@@ -39,7 +39,7 @@ interface TransactionsListProps {
 
 const paymentMethodConfig: Record<PaymentMethod, { icon: typeof CreditCard; label: string }> = {
   pix: { icon: QrCode, label: "PIX" },
-  cartao: { icon: CreditCard, label: "Cartao" },
+  cartao: { icon: CreditCard, label: "Cartão" },
   dinheiro: { icon: Banknote, label: "Dinheiro" },
 }
 
@@ -86,7 +86,7 @@ function TransactionItem({
         </div>
         <div className="min-w-0 flex-1">
           <p className="font-medium text-foreground">
-            {transaction.description || "Sem descricao"}
+            {transaction.description || "Sem descrição"}
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <Badge variant="secondary" className="gap-1">
@@ -134,10 +134,10 @@ function TransactionItem({
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Excluir transacao?</AlertDialogTitle>
+              <AlertDialogTitle>Excluir transação?</AlertDialogTitle>
               <AlertDialogDescription>
-                Esta acao nao pode ser desfeita. A transacao de{" "}
-                <strong>{formatCurrency(transaction.value)}</strong> sera 
+                Esta ação não pode ser desfeita. A transação de{" "}
+                <strong>{formatCurrency(transaction.value)}</strong> será 
                 permanentemente removida.
               </AlertDialogDescription>
             </AlertDialogHeader>
@@ -177,19 +177,23 @@ export function TransactionsList({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Receipt className="h-5 w-5 text-primary" />
-          Transacoes
+          Transações
         </CardTitle>
         <CardDescription>
-          {transactions.length} transacao(oes) registrada(s)
+          {transactions.length} transação(ões) registrada(s)
         </CardDescription>
       </CardHeader>
       <CardContent>
         {transactions.length === 0 ? (
-          <Empty
-            icon={Receipt}
-            title="Nenhuma transacao"
-            description="Adicione sua primeira entrada ou saida"
-          />
+          <Empty>
+            <EmptyMedia variant="icon">
+              <Receipt />
+            </EmptyMedia>
+            <EmptyHeader>
+              <EmptyTitle>Nenhuma transação</EmptyTitle>
+              <EmptyDescription>Adicione sua primeira entrada ou saída</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         ) : (
           <div className="space-y-3">
             {transactions.map((transaction) => (

@@ -1,14 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback, Suspense } from "react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { collection, query, orderBy, getDocs, where, Timestamp } from "firebase/firestore"
 import { db, isFirebaseConfigured } from "@/lib/firebase"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Spinner } from "@/components/ui/spinner"
-import { Empty } from "@/components/ui/empty"
+import { Empty, EmptyMedia, EmptyHeader, EmptyTitle, EmptyDescription } from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { 
@@ -36,7 +37,7 @@ const paymentMethodIcons = {
 
 const paymentMethodLabels = {
   pix: "PIX",
-  cartao: "Cartao",
+  cartao: "Cartão",
   dinheiro: "Dinheiro",
 }
 
@@ -57,8 +58,9 @@ function formatDate(timestamp: Timestamp) {
   }).format(timestamp.toDate())
 }
 
-export default function TransparenciaPage() {
-  const [code, setCode] = useState("")
+function TransparenciaContent() {
+  const searchParams = useSearchParams()
+  const [code, setCode] = useState(searchParams.get("code") || "")
   const [project, setProject] = useState<Project | null>(null)
   const [entries, setEntries] = useState<Transaction[]>([])
   const [exits, setExits] = useState<Transaction[]>([])
@@ -66,10 +68,11 @@ export default function TransparenciaPage() {
   const [searched, setSearched] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleSearch = async () => {
-    if (!code.trim()) return
+  const handleSearch = useCallback(async (searchCode?: string) => {
+    const codeToSearch = searchCode || code
+    if (!codeToSearch.trim()) return
     if (!db) {
-      setError("Sistema nao configurado")
+      setError("Sistema não configurado")
       return
     }
 
@@ -78,10 +81,10 @@ export default function TransparenciaPage() {
     setSearched(true)
 
     try {
-      // Buscar projeto pelo codigo
+      // Buscar projeto pelo código
       const projectQuery = query(
         collection(db, "projects"),
-        where("publicCode", "==", code.toUpperCase().trim()),
+        where("publicCode", "==", codeToSearch.toUpperCase().trim()),
         where("isPublic", "==", true)
       )
 
@@ -91,7 +94,7 @@ export default function TransparenciaPage() {
         setProject(null)
         setEntries([])
         setExits([])
-        setError("Projeto nao encontrado ou nao e publico")
+        setError("Projeto não encontrado ou não é público")
         setLoading(false)
         return
       }
@@ -103,7 +106,7 @@ export default function TransparenciaPage() {
 
       setProject(projectData)
 
-      // Buscar transacoes do projeto
+      // Buscar transações do projeto
       const transactionsQuery = query(
         collection(db, "transactions"),
         where("projectId", "==", projectData.id),
@@ -125,7 +128,14 @@ export default function TransparenciaPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [code])
+
+  useEffect(() => {
+    const initialCode = searchParams.get("code")
+    if (initialCode) {
+      handleSearch(initialCode)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -158,7 +168,7 @@ export default function TransparenciaPage() {
           </div>
           <div className="min-w-0 flex-1">
             <p className="font-medium text-foreground">
-              {transaction.description || "Sem descricao"}
+              {transaction.description || "Sem descrição"}
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <Badge variant="secondary" className="gap-1">
@@ -211,10 +221,10 @@ export default function TransparenciaPage() {
           {/* Page Title */}
           <div className="mb-8 text-center">
             <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-              Transparencia Financeira
+              Transparência Financeira
             </h1>
             <p className="mt-2 text-lg text-muted-foreground">
-              Insira o codigo do projeto para acompanhar as movimentacoes
+              Insira o código do projeto para acompanhar as movimentações
             </p>
           </div>
 
@@ -226,14 +236,14 @@ export default function TransparenciaPage() {
               </div>
               <CardTitle>Consultar Projeto</CardTitle>
               <CardDescription>
-                Digite o codigo de 8 caracteres do projeto que deseja visualizar
+                Digite o código de 8 caracteres do projeto que deseja visualizar
               </CardDescription>
             </CardHeader>
             <CardContent>
               {!isFirebaseConfigured && (
                 <Alert variant="destructive" className="mb-4">
                   <AlertTriangle className="h-4 w-4" />
-                  <AlertTitle>Sistema nao configurado</AlertTitle>
+                  <AlertTitle>Sistema não configurado</AlertTitle>
                   <AlertDescription>
                     Configure o Firebase para habilitar a consulta.
                   </AlertDescription>
@@ -251,7 +261,7 @@ export default function TransparenciaPage() {
                   disabled={!isFirebaseConfigured}
                 />
                 <Button 
-                  onClick={handleSearch} 
+                  onClick={() => handleSearch()} 
                   disabled={loading || !code.trim() || !isFirebaseConfigured}
                 >
                   {loading ? (
@@ -303,7 +313,7 @@ export default function TransparenciaPage() {
                       </p>
                     </div>
                     <div className="text-center">
-                      <p className="text-sm text-muted-foreground">Saidas</p>
+                      <p className="text-sm text-muted-foreground">Saídas</p>
                       <p className="text-lg font-semibold text-expense">
                         {formatCurrency(project.totalExpense)}
                       </p>
@@ -335,11 +345,15 @@ export default function TransparenciaPage() {
                   </CardHeader>
                   <CardContent className="p-4">
                     {entries.length === 0 ? (
-                      <Empty
-                        icon={TrendingUp}
-                        title="Nenhuma entrada"
-                        description="Este projeto ainda nao possui entradas"
-                      />
+                      <Empty>
+                        <EmptyMedia variant="icon">
+                          <TrendingUp />
+                        </EmptyMedia>
+                        <EmptyHeader>
+                          <EmptyTitle>Nenhuma entrada</EmptyTitle>
+                          <EmptyDescription>Este projeto ainda não possui entradas</EmptyDescription>
+                        </EmptyHeader>
+                      </Empty>
                     ) : (
                       <div className="space-y-3">
                         {entries.map((entry) => (
@@ -362,18 +376,22 @@ export default function TransparenciaPage() {
                         <TrendingDown className="h-5 w-5 text-expense" />
                       </div>
                       <div>
-                        <CardTitle className="text-lg text-expense">Saidas</CardTitle>
+                        <CardTitle className="text-lg text-expense">Saídas</CardTitle>
                         <CardDescription>{exits.length} registros</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent className="p-4">
                     {exits.length === 0 ? (
-                      <Empty
-                        icon={TrendingDown}
-                        title="Nenhuma saida"
-                        description="Este projeto ainda nao possui saidas"
-                      />
+                      <Empty>
+                        <EmptyMedia variant="icon">
+                          <TrendingDown />
+                        </EmptyMedia>
+                        <EmptyHeader>
+                          <EmptyTitle>Nenhuma saída</EmptyTitle>
+                          <EmptyDescription>Este projeto ainda não possui saídas</EmptyDescription>
+                        </EmptyHeader>
+                      </Empty>
                     ) : (
                       <div className="space-y-3">
                         {exits.map((exit) => (
@@ -395,10 +413,10 @@ export default function TransparenciaPage() {
                 <Lock className="h-8 w-8 text-muted-foreground" />
               </div>
               <h3 className="mt-4 text-lg font-medium text-foreground">
-                Projeto nao encontrado
+                Projeto não encontrado
               </h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Verifique o codigo e tente novamente
+                Verifique o código e tente novamente
               </p>
             </div>
           ) : (
@@ -410,7 +428,7 @@ export default function TransparenciaPage() {
                 Busque um projeto
               </h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Digite o codigo acima para visualizar as movimentacoes
+                Digite o código acima para visualizar as movimentações
               </p>
             </div>
           )}
@@ -426,5 +444,17 @@ export default function TransparenciaPage() {
         </div>
       </footer>
     </div>
+  )
+}
+
+export default function TransparenciaPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center">
+        <Spinner className="h-8 w-8" />
+      </div>
+    }>
+      <TransparenciaContent />
+    </Suspense>
   )
 }

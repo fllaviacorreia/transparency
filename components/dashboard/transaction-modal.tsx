@@ -88,13 +88,13 @@ export function TransactionModal({
     if (file) {
       // Check file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert("O arquivo deve ter no maximo 5MB")
+        alert("O arquivo deve ter no máximo 5MB")
         return
       }
       // Check file type
       const allowedTypes = ["image/jpeg", "image/png", "image/webp", "application/pdf"]
       if (!allowedTypes.includes(file.type)) {
-        alert("Tipo de arquivo nao permitido. Use JPG, PNG, WebP ou PDF")
+        alert("Tipo de arquivo não permitido. Use JPG, PNG, WebP ou PDF")
         return
       }
       setReceipt(file)
@@ -112,9 +112,9 @@ export function TransactionModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Nova Transacao</DialogTitle>
+          <DialogTitle>Nova Transação</DialogTitle>
           <DialogDescription>
-            Adicionar transacao em <strong>{projectTitle}</strong>
+            Adicionar transação em <strong>{projectTitle}</strong>
           </DialogDescription>
         </DialogHeader>
 
@@ -140,7 +140,7 @@ export function TransactionModal({
                     value="saida"
                     className="data-[state=active]:bg-expense/10 data-[state=active]:text-expense"
                   >
-                    Saida
+                    Saída
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -179,7 +179,7 @@ export function TransactionModal({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="pix">PIX</SelectItem>
-                  <SelectItem value="cartao">Cartao</SelectItem>
+                  <SelectItem value="cartao">Cartão</SelectItem>
                   <SelectItem value="dinheiro">Dinheiro</SelectItem>
                 </SelectContent>
               </Select>
@@ -187,10 +187,10 @@ export function TransactionModal({
 
             {/* Description */}
             <Field>
-              <FieldLabel htmlFor="description">Descricao</FieldLabel>
+              <FieldLabel htmlFor="description">Descrição</FieldLabel>
               <Textarea
                 id="description"
-                placeholder="Descreva a transacao"
+                placeholder="Descreva a transação"
                 value={formData.description}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
@@ -240,7 +240,7 @@ export function TransactionModal({
                 </Button>
               )}
               <p className="text-xs text-muted-foreground">
-                JPG, PNG, WebP ou PDF. Maximo 5MB.
+                JPG, PNG, WebP ou PDF. Máximo 5MB.
               </p>
             </Field>
           </FieldGroup>
@@ -272,7 +272,7 @@ export function TransactionModal({
                   Salvando...
                 </>
               ) : (
-                `Adicionar ${formData.type === "entrada" ? "Entrada" : "Saida"}`
+                `Adicionar ${formData.type === "entrada" ? "Entrada" : "Saída"}`
               )}
             </Button>
           </DialogFooter>

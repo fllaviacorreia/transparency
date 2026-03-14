@@ -69,7 +69,7 @@ export function ProjectModal({
           <DialogDescription>
             {project
               ? "Atualize as informacoes do seu projeto"
-              : "Crie um novo projeto para organizar suas financas"}
+              : "Crie um novo projeto para organizar suas finanças"}
           </DialogDescription>
         </DialogHeader>
 
@@ -90,10 +90,10 @@ export function ProjectModal({
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="description">Descricao</FieldLabel>
+              <FieldLabel htmlFor="description">Descrição</FieldLabel>
               <Textarea
                 id="description"
-                placeholder="Uma breve descricao do projeto"
+                placeholder="Uma breve descrição do projeto"
                 value={formData.description}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })

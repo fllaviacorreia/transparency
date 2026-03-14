@@ -78,7 +78,7 @@ export default function DashboardLayout({
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/transparencia" className="gap-2">
                   <Eye className="h-4 w-4" />
-                  Transparencia
+                  Transparência
                 </Link>
               </Button>
             </nav>
@@ -104,7 +104,7 @@ export default function DashboardLayout({
               <DropdownMenuItem asChild>
                 <Link href="/transparencia" className="cursor-pointer">
                   <Eye className="mr-2 h-4 w-4" />
-                  Transparencia
+                  Transparência
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />

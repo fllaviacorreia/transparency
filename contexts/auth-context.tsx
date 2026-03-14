@@ -6,7 +6,6 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
-  sendPasswordResetEmail,
   confirmPasswordReset,
   type User,
 } from "firebase/auth"
@@ -32,7 +31,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isFirebaseConfigured || !auth) {
-      setLoading(false)
+      // Avoid calling setState synchronously in effect body
+      Promise.resolve().then(() => setLoading(false))
       return
     }
 
@@ -68,8 +68,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const resetPassword = async (email: string) => {
-    if (!auth) throw new Error("Firebase não configurado")
-    await sendPasswordResetEmail(auth, email)
+    const res = await fetch("/api/auth/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    })
+
+    if (!res.ok) {
+      const data = await res.json()
+      const error = Object.assign(new Error(data.error || "Erro ao enviar e-mail."), {
+        code: res.status === 404 ? "auth/user-not-found" : undefined,
+      })
+      throw error
+    }
   }
 
   const confirmReset = async (code: string, newPassword: string) => {

@@ -17,9 +17,9 @@ import {
   getDocs,
 } from "firebase/firestore"
 
-// Gera um codigo unico de 8 caracteres alfanumericos
+// Gera um código único de 8 caracteres alfanuméricos
 function generatePublicCode(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" // Sem caracteres ambiguos (0, O, 1, I)
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" // Sem caracteres ambíguos (0, O, 1, I)
   let code = ""
   for (let i = 0; i < 8; i++) {
     code += chars.charAt(Math.floor(Math.random() * chars.length))
@@ -37,7 +37,7 @@ export function useProjects() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!user) {
+    if (!user || !db) {
       setProjects([])
       setLoading(false)
       return
@@ -71,10 +71,10 @@ export function useProjects() {
 
   const createProject = useCallback(
     async (title: string, description: string, isPublic: boolean = true) => {
-      if (!user || !db) throw new Error("Usuario nao autenticado")
+      if (!user || !db) throw new Error("Usuário não autenticado")
       if (projects.length >= 5) throw new Error("Limite de 5 projetos atingido")
 
-      // Gera codigo unico
+      // Gera código único
       const publicCode = generatePublicCode()
 
       const projectData = {
@@ -105,7 +105,7 @@ export function useProjects() {
 
   const updateProject = useCallback(
     async (projectId: string, title: string, description: string) => {
-      if (!user) throw new Error("Usuario nao autenticado")
+      if (!user || !db) throw new Error("Usuário não autenticado")
 
       const projectRef = doc(db, "projects", projectId)
       await updateDoc(projectRef, {
@@ -119,7 +119,7 @@ export function useProjects() {
 
   const deleteProject = useCallback(
     async (projectId: string) => {
-      if (!user) throw new Error("Usuario nao autenticado")
+      if (!user || !db) throw new Error("Usuário não autenticado")
 
       const projectRef = doc(db, "projects", projectId)
       await deleteDoc(projectRef)
@@ -135,6 +135,7 @@ export function useProjects() {
 
   const refreshProjectTotals = useCallback(
     async (projectId: string, incomeChange: number, expenseChange: number) => {
+      if (!db) return
       const projectRef = doc(db, "projects", projectId)
       const projectSnap = await getDoc(projectRef)
       
@@ -177,7 +178,7 @@ export function useProjects() {
 
   const toggleProjectVisibility = useCallback(
     async (projectId: string, isPublic: boolean) => {
-      if (!user || !db) throw new Error("Usuario nao autenticado")
+      if (!user || !db) throw new Error("Usuário não autenticado")
 
       const projectRef = doc(db, "projects", projectId)
       await updateDoc(projectRef, {

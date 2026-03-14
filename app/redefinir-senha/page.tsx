@@ -39,7 +39,7 @@ function RedefinirSenhaContent() {
     e.preventDefault()
 
     if (formData.password !== formData.confirmPassword) {
-      toast.error("As senhas nao coincidem.")
+      toast.error("As senhas não coincidem.")
       return
     }
 
@@ -72,10 +72,10 @@ function RedefinirSenhaContent() {
             <XCircle className="h-8 w-8 text-destructive" />
           </div>
           <CardTitle className="font-display text-2xl">
-            Link Invalido
+            Link Inválido
           </CardTitle>
           <CardDescription className="text-base">
-            Este link de recuperação e invalido ou expirou.
+            Este link de recuperação é inválido ou expirou.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -98,7 +98,7 @@ function RedefinirSenhaContent() {
             Senha Redefinida!
           </CardTitle>
           <CardDescription className="text-base">
-            Sua senha foi alterada com sucesso. Voce ja pode acessar sua conta.
+            Sua senha foi alterada com sucesso. Você já pode acessar sua conta.
           </CardDescription>
         </CardHeader>
         <CardContent>

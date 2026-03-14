@@ -38,7 +38,7 @@ export default function RecuperarSenhaPage() {
       const firebaseError = error as { code?: string }
       
       if (firebaseError.code === "auth/user-not-found") {
-        toast.error("E-mail nao encontrado.")
+        toast.error("E-mail não encontrado.")
       } else {
         toast.error("Erro ao enviar e-mail. Tente novamente.")
       }
@@ -85,7 +85,7 @@ export default function RecuperarSenhaPage() {
             </CardTitle>
             <CardDescription className="text-base">
               {emailSent
-                ? "Verifique sua caixa de entrada e siga as instrucoes"
+                ? "Verifique sua caixa de entrada e siga as instruções"
                 : "Digite seu e-mail para receber o link de recuperação"}
             </CardDescription>
           </CardHeader>
@@ -95,7 +95,7 @@ export default function RecuperarSenhaPage() {
               <div className="space-y-4 text-center">
                 <p className="text-sm text-muted-foreground">
                   Enviamos um e-mail para <strong>{email}</strong> com 
-                  instrucoes para redefinir sua senha. O link expira em 1 hora.
+                  instruções para redefinir sua senha. O link expira em 1 hora.
                 </p>
                 <Button asChild className="w-full">
                   <Link href="/login">Voltar ao Login</Link>

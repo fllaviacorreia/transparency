@@ -22,7 +22,7 @@ export function Header() {
             href="/transparencia"
             className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
-            Transparencia
+            Transparência
           </Link>
           <Link
             href="#recursos"
@@ -43,7 +43,7 @@ export function Header() {
             <Link href="/login">Entrar</Link>
           </Button>
           <Button asChild>
-            <Link href="/login">Comecar Agora</Link>
+            <Link href="/login">Começar Agora</Link>
           </Button>
         </div>
       </div>

@@ -16,26 +16,9 @@ const spaceGrotesk = Space_Grotesk({
 })
 
 export const metadata: Metadata = {
-  title: 'Transpareny - Gestao Financeira Transparente',
-  description: 'Gerencie suas financas com total transparencia. Controle entradas e saidas de multiplos projetos com seguranca e simplicidade.',
+  title: 'Transpareny - Gestão Financeira Transparente',
+  description: 'Gerencie suas finanças com total transparência. Controle entradas e saídas de múltiplos projetos com segurança e simplicidade.',
   generator: 'v0.app',
-  icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
-  },
 }
 
 export default function RootLayout({

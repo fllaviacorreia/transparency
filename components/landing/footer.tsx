@@ -20,7 +20,7 @@ export function Footer() {
               href="/transparencia"
               className="text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
-              Transparencia
+              Transparência
             </Link>
             <Link
               href="#recursos"

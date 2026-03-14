@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Empty } from "@/components/ui/empty"
+import { Empty, EmptyMedia, EmptyHeader, EmptyTitle, EmptyDescription } from "@/components/ui/empty"
 import { Spinner } from "@/components/ui/spinner"
 import {
   AlertDialog,
@@ -15,7 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, FolderKanban, TrendingUp, TrendingDown } from "lucide-react"
+import { Plus, FolderKanban, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react"
 import { useProjects } from "@/hooks/use-projects"
 import { useTransactions } from "@/hooks/use-transactions"
 import { ProjectCard } from "@/components/dashboard/project-card"
@@ -23,6 +23,7 @@ import { ProjectModal } from "@/components/dashboard/project-modal"
 import { TransactionModal } from "@/components/dashboard/transaction-modal"
 import { TransactionsList } from "@/components/dashboard/transactions-list"
 import { DashboardCharts } from "@/components/dashboard/dashboard-charts"
+import { ShareModal } from "@/components/dashboard/share-modal"
 import { toast } from "sonner"
 import type { Project } from "@/types"
 
@@ -43,6 +44,7 @@ export default function DashboardPage() {
   const {
     transactions,
     loading: transactionsLoading,
+    error: transactionsError,
     createTransaction,
     deleteTransaction,
     totals,
@@ -54,6 +56,7 @@ export default function DashboardPage() {
   const [transactionModalOpen, setTransactionModalOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null)
+  const [shareProject, setShareProject] = useState<Project | null>(null)
 
   const handleCreateProject = async (title: string, description: string) => {
     try {
@@ -83,7 +86,7 @@ export default function DashboardPage() {
       if (selectedProjectId === projectToDelete.id) {
         setSelectedProjectId(null)
       }
-      toast.success("Projeto excluido!")
+      toast.success("Projeto excluído!")
     } catch {
       toast.error("Erro ao excluir projeto")
     }
@@ -91,30 +94,36 @@ export default function DashboardPage() {
     setProjectToDelete(null)
   }
 
-  const handleCreateTransaction = async (data: Parameters<typeof createTransaction>[0]) => {
+  const handleCreateTransaction = async (data: {
+    type: "entrada" | "saida"
+    value: number
+    paymentMethod: Parameters<typeof createTransaction>[0]["paymentMethod"]
+    description: string
+    receipt?: File
+  }) => {
     if (!selectedProjectId) return
     try {
       await createTransaction({ ...data, projectId: selectedProjectId })
-      toast.success(`${data.type === "entrada" ? "Entrada" : "Saida"} registrada!`)
+      toast.success(`${data.type === "entrada" ? "Entrada" : "Saída"} registrada!`)
     } catch {
-      toast.error("Erro ao registrar transacao")
-      throw new Error("Erro ao registrar transacao")
+      toast.error("Erro ao registrar transação")
+      throw new Error("Erro ao registrar transação")
     }
   }
 
   const handleDeleteTransaction = async (transaction: Parameters<typeof deleteTransaction>[0]) => {
     try {
       await deleteTransaction(transaction)
-      toast.success("Transacao excluida!")
+      toast.success("Transação excluída!")
     } catch {
-      toast.error("Erro ao excluir transacao")
+      toast.error("Erro ao excluir transação")
     }
   }
 
   const handleToggleVisibility = async (projectId: string, isPublic: boolean) => {
     try {
       await toggleProjectVisibility(projectId, isPublic)
-      toast.success(isPublic ? "Projeto agora e publico!" : "Projeto agora e privado!")
+      toast.success(isPublic ? "Projeto agora é público!" : "Projeto agora é privado!")
     } catch {
       toast.error("Erro ao alterar visibilidade")
     }
@@ -137,7 +146,7 @@ export default function DashboardPage() {
             Dashboard
           </h1>
           <p className="mt-1 text-muted-foreground">
-            Gerencie seus projetos e transacoes financeiras
+            Gerencie seus projetos e transações financeiras
           </p>
         </div>
         <div className="flex gap-3">
@@ -157,7 +166,7 @@ export default function DashboardPage() {
                 className="gap-2"
               >
                 <TrendingDown className="h-4 w-4 text-expense" />
-                <span className="hidden sm:inline">Saida</span>
+                <span className="hidden sm:inline">Saída</span>
               </Button>
             </>
           )}
@@ -186,11 +195,15 @@ export default function DashboardPage() {
         {projects.length === 0 ? (
           <Card className="border-border/50">
             <CardContent className="py-12">
-              <Empty
-                icon={FolderKanban}
-                title="Nenhum projeto"
-                description="Crie seu primeiro projeto para comecar a gerenciar suas financas"
-              />
+              <Empty>
+                <EmptyMedia variant="icon">
+                  <FolderKanban />
+                </EmptyMedia>
+                <EmptyHeader>
+                  <EmptyTitle>Nenhum projeto</EmptyTitle>
+                  <EmptyDescription>Crie seu primeiro projeto para começar a gerenciar suas finanças</EmptyDescription>
+                </EmptyHeader>
+              </Empty>
               <div className="mt-6 flex justify-center">
                 <Button
                   onClick={() => {
@@ -222,6 +235,7 @@ export default function DashboardPage() {
                   setDeleteDialogOpen(true)
                 }}
                 onToggleVisibility={(isPublic) => handleToggleVisibility(project.id, isPublic)}
+                onShare={() => setShareProject(project)}
               />
             ))}
           </div>
@@ -238,21 +252,47 @@ export default function DashboardPage() {
                 Resumo: {selectedProject.title}
               </h2>
             </div>
-            <DashboardCharts transactions={transactions} totals={totals} />
+            {transactionsError ? (
+              <Card className="border-destructive/50 bg-destructive/5">
+                <CardContent className="flex items-center gap-3 py-6">
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
+                  <div>
+                    <p className="font-medium text-destructive">Erro ao carregar transações</p>
+                    {transactionsError.includes("http") ? (
+                      <p className="text-sm text-muted-foreground">
+                        É necessário criar um índice no Firestore.{" "}
+                        <a
+                          href={transactionsError.match(/(https:\/\/[^\s]+)/)?.[1]}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary underline"
+                        >
+                          Clique aqui para criar
+                        </a>
+                      </p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">{transactionsError}</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <DashboardCharts transactions={transactions} totals={totals} />
+            )}
           </section>
 
           {/* Transactions */}
           <section>
             <div className="mb-4 flex items-center justify-between">
               <h2 className="font-display text-xl font-semibold">
-                Transacoes
+                Transações
               </h2>
               <Button
                 onClick={() => setTransactionModalOpen(true)}
                 className="gap-2"
               >
                 <Plus className="h-4 w-4" />
-                Nova Transacao
+                Nova Transação
               </Button>
             </div>
             <TransactionsList
@@ -270,7 +310,7 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle>Selecione um Projeto</CardTitle>
             <CardDescription>
-              Clique em um projeto acima para ver suas transacoes e graficos
+              Clique em um projeto acima para ver suas transações e gráficos
             </CardDescription>
           </CardHeader>
         </Card>
@@ -299,9 +339,9 @@ export default function DashboardPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir projeto?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acao nao pode ser desfeita. O projeto{" "}
+              Esta ação não pode ser desfeita. O projeto{" "}
               <strong>{projectToDelete?.title}</strong> e todas as suas 
-              transacoes serao permanentemente removidos.
+              transações serão permanentemente removidos.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -315,6 +355,13 @@ export default function DashboardPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Share Modal */}
+      <ShareModal
+        open={!!shareProject}
+        onOpenChange={(open: boolean) => !open && setShareProject(null)}
+        project={shareProject}
+      />
     </div>
   )
 }
