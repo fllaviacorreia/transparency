@@ -25,7 +25,9 @@ import {
   Search,
   Lock,
   Eye,
-  AlertTriangle
+  AlertTriangle,
+  FileText,
+  ExternalLink
 } from "lucide-react"
 import type { Transaction, Project } from "@/types"
 
@@ -175,6 +177,18 @@ function TransparenciaContent() {
                 <PaymentIcon className="h-3 w-3" />
                 {paymentMethodLabels[transaction.paymentMethod]}
               </Badge>
+              {transaction.receiptUrl && (
+                <a
+                  href={transaction.receiptUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                >
+                  <FileText className="h-3 w-3" />
+                  Comprovante
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
               {transaction.createdAt && (
                 <span className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Calendar className="h-3 w-3" />
