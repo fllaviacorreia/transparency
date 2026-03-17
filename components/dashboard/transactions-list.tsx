@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -28,6 +29,7 @@ import {
   Calendar,
   Receipt
 } from "lucide-react"
+import { ImageEditorModal } from "@/components/image-editor-modal"
 import type { Transaction, PaymentMethod } from "@/types"
 import type { Timestamp } from "firebase/firestore"
 
@@ -60,12 +62,21 @@ function formatDate(timestamp: Timestamp) {
   }).format(timestamp.toDate())
 }
 
+const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg"]
+
+function isImageUrl(url: string, name?: string): boolean {
+  const candidates = [name?.toLowerCase(), decodeURIComponent(url).toLowerCase()]
+  return candidates.some((str) => str && IMAGE_EXTENSIONS.some((ext) => str.includes(ext)))
+}
+
 function TransactionItem({
   transaction,
   onDelete,
+  onViewReceipt,
 }: {
   transaction: Transaction
   onDelete: () => void
+  onViewReceipt: (url: string, name?: string) => void
 }) {
   const isEntry = transaction.type === "entrada"
   const PaymentIcon = paymentMethodConfig[transaction.paymentMethod].icon
@@ -94,17 +105,31 @@ function TransactionItem({
               {paymentMethodConfig[transaction.paymentMethod].label}
             </Badge>
             {transaction.receiptUrl && (
-              <a
-                href={transaction.receiptUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <FileText className="h-3 w-3" />
-                Comprovante
-                <ExternalLink className="h-3 w-3" />
-              </a>
+              isImageUrl(transaction.receiptUrl, transaction.receiptName) ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onViewReceipt(transaction.receiptUrl!, transaction.receiptName)
+                  }}
+                  className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                >
+                  <FileText className="h-3 w-3" />
+                  Ver comprovante
+                </button>
+              ) : (
+                <a
+                  href={transaction.receiptUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <FileText className="h-3 w-3" />
+                  Comprovante
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              )
             )}
             {transaction.createdAt && (
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -162,6 +187,8 @@ export function TransactionsList({
   loading,
   onDelete,
 }: TransactionsListProps) {
+  const [editorImage, setEditorImage] = useState<{ url: string; name?: string } | null>(null)
+
   if (loading) {
     return (
       <Card className="border-border/50">
@@ -173,6 +200,7 @@ export function TransactionsList({
   }
 
   return (
+    <>
     <Card className="border-border/50">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
@@ -201,11 +229,21 @@ export function TransactionsList({
                 key={transaction.id}
                 transaction={transaction}
                 onDelete={() => onDelete(transaction)}
+                onViewReceipt={(url, name) => setEditorImage({ url, name })}
               />
             ))}
           </div>
         )}
       </CardContent>
     </Card>
+
+    {/* Image Editor Modal */}
+    <ImageEditorModal
+      open={!!editorImage}
+      onOpenChange={(open) => { if (!open) setEditorImage(null) }}
+      imageUrl={editorImage?.url || ""}
+      imageName={editorImage?.name}
+    />
+    </>
   )
 }

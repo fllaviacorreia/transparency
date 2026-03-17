@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -22,7 +22,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Upload, X, FileText, Image as ImageIcon } from "lucide-react"
+import { Upload, X, FileText, Image as ImageIcon, Pencil } from "lucide-react"
+import { ImageEditorModal } from "@/components/image-editor-modal"
 import type { PaymentMethod } from "@/types"
 
 interface TransactionModalProps {
@@ -52,7 +53,14 @@ export function TransactionModal({
     description: "",
   })
   const [receipt, setReceipt] = useState<File | null>(null)
+  const [editorOpen, setEditorOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const isImage = receipt?.type.startsWith("image/") ?? false
+  const receiptPreviewUrl = useMemo(() => {
+    if (receipt && isImage) return URL.createObjectURL(receipt)
+    return null
+  }, [receipt, isImage])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -81,6 +89,7 @@ export function TransactionModal({
       description: "",
     })
     setReceipt(null)
+    setEditorOpen(false)
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -212,20 +221,43 @@ export function TransactionModal({
               />
               
               {receipt ? (
-                <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 p-3">
-                  <div className="flex items-center gap-2 truncate">
-                    {getFileIcon(receipt)}
-                    <span className="truncate text-sm">{receipt.name}</span>
+                <div className="space-y-2">
+                  {isImage && receiptPreviewUrl && (
+                    <div className="relative overflow-hidden rounded-lg border border-border">
+                      <img
+                        src={receiptPreviewUrl}
+                        alt="Preview do comprovante"
+                        className="max-h-40 w-full object-contain bg-muted/30"
+                      />
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 p-3">
+                    <div className="flex items-center gap-2 truncate">
+                      {getFileIcon(receipt)}
+                      <span className="truncate text-sm">{receipt.name}</span>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {isImage && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setEditorOpen(true)}
+                          title="Editar imagem"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setReceipt(null)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setReceipt(null)}
-                    className="shrink-0"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
                 </div>
               ) : (
                 <Button
@@ -278,6 +310,17 @@ export function TransactionModal({
           </DialogFooter>
         </form>
       </DialogContent>
+
+      {/* Image Editor */}
+      {receiptPreviewUrl && (
+        <ImageEditorModal
+          open={editorOpen}
+          onOpenChange={setEditorOpen}
+          imageUrl={receiptPreviewUrl}
+          imageName={receipt?.name}
+          onSave={(editedFile) => setReceipt(editedFile)}
+        />
+      )}
     </Dialog>
   )
 }
