@@ -150,9 +150,16 @@ export function DashboardCharts({ transactions, totals }: DashboardChartsProps) 
                 <Tooltip
                   formatter={(value: number) => formatCurrency(value)}
                   contentStyle={{
-                    backgroundColor: "hsl(var(--popover))",
-                    borderColor: "hsl(var(--border))",
+                    backgroundColor: "#ffffff",
+                    borderColor: "#e5e7eb",
                     borderRadius: "var(--radius)",
+                    color: "#1f2937",
+                  }}
+                  labelStyle={{
+                    color: "#374151",
+                  }}
+                  itemStyle={{
+                    color: "#1f2937",
                   }}
                 />
                 <Legend />
