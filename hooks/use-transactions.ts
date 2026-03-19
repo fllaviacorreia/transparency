@@ -111,16 +111,22 @@ export function useTransactions(projectId: string | null) {
         receiptName = result.name
       }
 
-      const transactionData = {
+      const transactionData: Record<string, unknown> = {
         projectId: data.projectId,
         userId: user.uid,
         type: data.type,
         value: data.value,
         paymentMethod: data.paymentMethod,
         description: data.description,
-        receiptUrl,
-        receiptName,
         createdAt: serverTimestamp(),
+      }
+
+      // Só adiciona campos de comprovante se existirem (Firestore não aceita undefined)
+      if (receiptUrl) {
+        transactionData.receiptUrl = receiptUrl
+      }
+      if (receiptName) {
+        transactionData.receiptName = receiptName
       }
 
       await addDoc(collection(db, "transactions"), transactionData)

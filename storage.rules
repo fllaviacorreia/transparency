@@ -1,0 +1,79 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ============================================
+    // FUNÇÕES AUXILIARES
+    // ============================================
+
+    // Verifica se o usuário está autenticado
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Verifica se o arquivo é uma imagem válida
+    function isValidImage() {
+      return request.resource.contentType.matches('image/.*')
+        && request.resource.size < 5 * 1024 * 1024; // máximo 5MB
+    }
+
+    // Verifica se o arquivo é um documento válido (PDF, imagem)
+    function isValidReceipt() {
+      return (
+        request.resource.contentType.matches('image/.*') ||
+        request.resource.contentType == 'application/pdf'
+      ) && request.resource.size < 10 * 1024 * 1024; // máximo 10MB
+    }
+
+    // ============================================
+    // PASTA: receipts/{userId}/{fileName}
+    // Comprovantes de transações
+    // ============================================
+    match /receipts/{userId}/{fileName} {
+      // Leitura: qualquer pessoa pode ler (para transparência pública)
+      allow read: if true;
+
+      // Upload: apenas o próprio usuário pode fazer upload
+      allow create: if isAuthenticated()
+        && request.auth.uid == userId
+        && isValidReceipt()
+        && request.resource.metadata.ownerId == request.auth.uid;
+
+      // Atualização: não permitida
+      allow update: if false;
+
+      // Deleção: apenas o próprio usuário pode deletar
+      allow delete: if isAuthenticated()
+        && request.auth.uid == userId;
+    }
+
+    // ============================================
+    // PASTA: goals/{projectId}/{fileName}
+    // Imagens de metas
+    // ============================================
+    match /goals/{projectId}/{fileName} {
+      // Leitura: qualquer pessoa pode ler (para transparência pública)
+      allow read: if true;
+
+      // Upload: usuário autenticado pode fazer upload
+      // (a validação de propriedade do projeto é feita no Firestore)
+      allow create: if isAuthenticated()
+        && isValidImage();
+
+      // Atualização: não permitida
+      allow update: if false;
+
+      // Deleção: usuário autenticado pode deletar
+      // (a validação de propriedade do projeto é feita no Firestore)
+      allow delete: if isAuthenticated();
+    }
+
+    // ============================================
+    // REGRA PADRÃO: Negar tudo não especificado
+    // ============================================
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

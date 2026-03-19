@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { FieldGroup, Field, FieldLabel } from "@/components/ui/field"
 import { Spinner } from "@/components/ui/spinner"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 import {
   Dialog,
   DialogContent,
@@ -14,12 +16,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Globe, Lock } from "lucide-react"
 import type { Project } from "@/types"
 
 interface ProjectModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSubmit: (title: string, description: string) => Promise<void>
+  onSubmit: (title: string, description: string, isPublic?: boolean) => Promise<void>
   project?: Project | null
 }
 
@@ -33,6 +36,7 @@ export function ProjectModal({
   const [formData, setFormData] = useState({
     title: "",
     description: "",
+    isPublic: true,
   })
 
   useEffect(() => {
@@ -40,9 +44,10 @@ export function ProjectModal({
       setFormData({
         title: project.title,
         description: project.description,
+        isPublic: project.isPublic,
       })
     } else {
-      setFormData({ title: "", description: "" })
+      setFormData({ title: "", description: "", isPublic: true })
     }
   }, [project, open])
 
@@ -51,9 +56,9 @@ export function ProjectModal({
     setIsLoading(true)
 
     try {
-      await onSubmit(formData.title, formData.description)
+      await onSubmit(formData.title, formData.description, project ? undefined : formData.isPublic)
       onOpenChange(false)
-      setFormData({ title: "", description: "" })
+      setFormData({ title: "", description: "", isPublic: true })
     } finally {
       setIsLoading(false)
     }
@@ -102,6 +107,38 @@ export function ProjectModal({
                 disabled={isLoading}
               />
             </Field>
+
+            {!project && (
+              <Field>
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div className="flex items-center gap-3">
+                    {formData.isPublic ? (
+                      <Globe className="h-5 w-5 text-emerald-600" />
+                    ) : (
+                      <Lock className="h-5 w-5 text-muted-foreground" />
+                    )}
+                    <div className="space-y-0.5">
+                      <Label htmlFor="isPublic" className="text-sm font-medium cursor-pointer">
+                        {formData.isPublic ? "Projeto Público" : "Projeto Privado"}
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        {formData.isPublic
+                          ? "Qualquer pessoa com o código poderá visualizar"
+                          : "Apenas você terá acesso ao projeto"}
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    id="isPublic"
+                    checked={formData.isPublic}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, isPublic: checked })
+                    }
+                    disabled={isLoading}
+                  />
+                </div>
+              </Field>
+            )}
           </FieldGroup>
 
           <DialogFooter>

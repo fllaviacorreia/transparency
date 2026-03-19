@@ -59,9 +59,9 @@ export default function DashboardPage() {
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null)
   const [shareProject, setShareProject] = useState<Project | null>(null)
 
-  const handleCreateProject = async (title: string, description: string) => {
+  const handleCreateProject = async (title: string, description: string, isPublic?: boolean) => {
     try {
-      await createProject(title, description)
+      await createProject(title, description, isPublic ?? true)
       toast.success("Projeto criado com sucesso!")
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Erro ao criar projeto")
@@ -74,9 +74,9 @@ export default function DashboardPage() {
     try {
       await updateProject(editingProject.id, title, description)
       toast.success("Projeto atualizado!")
-    } catch {
-      toast.error("Erro ao atualizar projeto")
-      throw new Error("Erro ao atualizar projeto")
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido"
+      toast.error(`Erro ao atualizar projeto: ${errorMessage}`)
     }
   }
 
@@ -106,9 +106,9 @@ export default function DashboardPage() {
     try {
       await createTransaction({ ...data, projectId: selectedProjectId })
       toast.success(`${data.type === "entrada" ? "Entrada" : "Saída"} registrada!`)
-    } catch {
-      toast.error("Erro ao registrar transação")
-      throw new Error("Erro ao registrar transação")
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido"
+      toast.error(`Erro ao registrar transação: ${errorMessage}`)
     }
   }
 
