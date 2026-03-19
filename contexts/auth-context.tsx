@@ -7,10 +7,20 @@ import {
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
   confirmPasswordReset,
+  updatePassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
   type User,
 } from "firebase/auth"
-import { doc, setDoc, serverTimestamp } from "firebase/firestore"
+import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore"
 import { auth, db, isFirebaseConfigured } from "@/lib/firebase"
+
+interface UserProfile {
+  name: string
+  email: string
+  createdAt: Date | null
+  projectsCount: number
+}
 
 interface AuthContextType {
   user: User | null
@@ -21,6 +31,9 @@ interface AuthContextType {
   signOut: () => Promise<void>
   resetPassword: (email: string) => Promise<void>
   confirmReset: (code: string, newPassword: string) => Promise<void>
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>
+  updateProfile: (name: string) => Promise<void>
+  getUserProfile: () => Promise<UserProfile | null>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -102,6 +115,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await confirmPasswordReset(auth, code, newPassword)
   }
 
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    if (!auth || !user || !user.email) throw new Error("Usuário não autenticado")
+    
+    // Re-authenticate user before changing password
+    const credential = EmailAuthProvider.credential(user.email, currentPassword)
+    await reauthenticateWithCredential(user, credential)
+    
+    // Change password
+    await updatePassword(user, newPassword)
+  }
+
+  const updateProfile = async (name: string) => {
+    if (!db || !user) throw new Error("Usuário não autenticado")
+    
+    await updateDoc(doc(db, "users", user.uid), {
+      name,
+      updatedAt: serverTimestamp(),
+    })
+  }
+
+  const getUserProfile = async (): Promise<UserProfile | null> => {
+    if (!db || !user) return null
+    
+    const userDoc = await getDoc(doc(db, "users", user.uid))
+    if (!userDoc.exists()) return null
+    
+    const data = userDoc.data()
+    return {
+      name: data.name || "",
+      email: data.email || user.email || "",
+      createdAt: data.createdAt?.toDate() || null,
+      projectsCount: data.projectsCount || 0,
+    }
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -113,6 +161,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signOut,
         resetPassword,
         confirmReset,
+        changePassword,
+        updateProfile,
+        getUserProfile,
       }}
     >
       {children}
