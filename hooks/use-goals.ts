@@ -5,7 +5,6 @@ import {
   collection,
   query,
   where,
-  orderBy,
   onSnapshot,
   addDoc,
   updateDoc,
@@ -36,8 +35,7 @@ export function useGoals(projectId: string | null) {
 
     const q = query(
       collection(db, "goals"),
-      where("projectId", "==", projectId),
-      orderBy("createdAt", "desc")
+      where("projectId", "==", projectId)
     )
 
     const unsubscribe = onSnapshot(
@@ -47,6 +45,12 @@ export function useGoals(projectId: string | null) {
           id: doc.id,
           ...doc.data(),
         })) as Goal[]
+        // Sort client-side to avoid composite index requirement
+        goalsData.sort((a, b) => {
+          const aTime = a.createdAt?.toMillis?.() || 0
+          const bTime = b.createdAt?.toMillis?.() || 0
+          return bTime - aTime
+        })
         setGoals(goalsData)
         setActiveGoal(goalsData.find((g) => g.isActive) || null)
         setLoading(false)
