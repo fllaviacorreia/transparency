@@ -123,7 +123,16 @@ export function useTransactions(projectId: string | null) {
         createdAt: serverTimestamp(),
       }
 
-      await addDoc(collection(db, "transactions"), transactionData)
+      console.log("[v0] Creating transaction:", JSON.stringify(transactionData, null, 2))
+      try {
+        const docRef = await addDoc(collection(db, "transactions"), transactionData)
+        console.log("[v0] Transaction created with ID:", docRef.id)
+      } catch (firestoreError) {
+        console.error("[v0] Firestore error details:", firestoreError)
+        console.error("[v0] Error code:", (firestoreError as { code?: string }).code)
+        console.error("[v0] Error message:", (firestoreError as { message?: string }).message)
+        throw firestoreError
+      }
 
       // Update project totals
       if (data.type === "entrada") {

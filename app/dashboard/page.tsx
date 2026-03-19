@@ -74,9 +74,10 @@ export default function DashboardPage() {
     try {
       await updateProject(editingProject.id, title, description)
       toast.success("Projeto atualizado!")
-    } catch {
-      toast.error("Erro ao atualizar projeto")
-      throw new Error("Erro ao atualizar projeto")
+    } catch (error) {
+      console.error("[v0] Update project error:", error)
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido"
+      toast.error(`Erro ao atualizar projeto: ${errorMessage}`)
     }
   }
 
@@ -106,9 +107,10 @@ export default function DashboardPage() {
     try {
       await createTransaction({ ...data, projectId: selectedProjectId })
       toast.success(`${data.type === "entrada" ? "Entrada" : "Saída"} registrada!`)
-    } catch {
-      toast.error("Erro ao registrar transação")
-      throw new Error("Erro ao registrar transação")
+    } catch (error) {
+      console.error("[v0] Transaction error:", error)
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido"
+      toast.error(`Erro ao registrar transação: ${errorMessage}`)
     }
   }
 
