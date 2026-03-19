@@ -111,28 +111,25 @@ export function useTransactions(projectId: string | null) {
         receiptName = result.name
       }
 
-      const transactionData = {
+      const transactionData: Record<string, unknown> = {
         projectId: data.projectId,
         userId: user.uid,
         type: data.type,
         value: data.value,
         paymentMethod: data.paymentMethod,
         description: data.description,
-        receiptUrl,
-        receiptName,
         createdAt: serverTimestamp(),
       }
 
-      console.log("[v0] Creating transaction:", JSON.stringify(transactionData, null, 2))
-      try {
-        const docRef = await addDoc(collection(db, "transactions"), transactionData)
-        console.log("[v0] Transaction created with ID:", docRef.id)
-      } catch (firestoreError) {
-        console.error("[v0] Firestore error details:", firestoreError)
-        console.error("[v0] Error code:", (firestoreError as { code?: string }).code)
-        console.error("[v0] Error message:", (firestoreError as { message?: string }).message)
-        throw firestoreError
+      // Só adiciona campos de comprovante se existirem (Firestore não aceita undefined)
+      if (receiptUrl) {
+        transactionData.receiptUrl = receiptUrl
       }
+      if (receiptName) {
+        transactionData.receiptName = receiptName
+      }
+
+      await addDoc(collection(db, "transactions"), transactionData)
 
       // Update project totals
       if (data.type === "entrada") {
