@@ -1,0 +1,111 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /* =========================
+       🔧 HELPERS
+    ========================= */
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function userDocExists() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function getUser() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function projectExists(projectId) {
+      return exists(/databases/$(database)/documents/projects/$(projectId));
+    }
+
+    function getProject(projectId) {
+      return get(/databases/$(database)/documents/projects/$(projectId)).data;
+    }
+
+    function isProjectOwner(projectId) {
+      return projectExists(projectId)
+        && getProject(projectId).userId == request.auth.uid;
+    }
+
+    function isProjectPublic(projectId) {
+      return projectExists(projectId)
+        && getProject(projectId).isPublic == true;
+    }
+
+    /* =========================
+       👤 USERS
+    ========================= */
+
+    match /users/{userId} {
+
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+
+      allow read, update, delete: if isOwner(userId);
+    }
+
+    /* =========================
+       📁 PROJECTS
+    ========================= */
+
+    match /projects/{projectId} {
+
+      // leitura pública
+      allow read: if
+        resource.data.isPublic == true
+        || isOwner(resource.data.userId);
+
+      // criação limitada a 5 projetos por usuário
+      allow create: if isAuthenticated()
+        && userDocExists()
+        && getUser().projectsCount < 5
+        && request.resource.data.userId == request.auth.uid;
+
+      allow update, delete: if isOwner(resource.data.userId);
+    }
+
+    /* =========================
+       💰 TRANSACTIONS
+    ========================= */
+
+    match /transactions/{transactionId} {
+
+      allow read: if isOwner(resource.data.userId)
+        || isProjectPublic(resource.data.projectId);
+
+      allow create: if isAuthenticated()
+        && userDocExists()
+        && projectExists(request.resource.data.projectId)
+        && isProjectOwner(request.resource.data.projectId)
+        && request.resource.data.userId == request.auth.uid;
+
+      allow update, delete: if isOwner(resource.data.userId);
+    }
+
+    /* =========================
+       🎯 GOALS
+    ========================= */
+
+    match /goals/{goalId} {
+
+      allow read: if isOwner(resource.data.userId)
+        || isProjectPublic(resource.data.projectId);
+
+      allow create: if isAuthenticated()
+        && userDocExists()
+        && projectExists(request.resource.data.projectId)
+        && isProjectOwner(request.resource.data.projectId)
+        && request.resource.data.userId == request.auth.uid;
+
+      allow update, delete: if isOwner(resource.data.userId);
+    }
+  }
+}
