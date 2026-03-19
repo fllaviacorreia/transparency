@@ -122,9 +122,9 @@ service cloud.firestore {
       // Criação: usuário autenticado pode criar transações
       allow create: if isAuthenticated()
         && request.resource.data.userId == request.auth.uid
-        && hasRequiredFields([
+        && request.resource.data.keys().hasAll([
           'projectId', 'userId', 'type', 'value', 
-          'paymentMethod', 'description', 'createdAt'
+          'paymentMethod', 'description'
         ])
         // Verifica se o projeto pertence ao usuário
         && exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId))
@@ -135,7 +135,9 @@ service cloud.firestore {
         && request.resource.data.value > 0 // valor deve ser maior que zero
         && isValidPaymentMethod(request.resource.data.paymentMethod)
         && request.resource.data.description is string
-        && request.resource.data.description.size() <= 500;
+        && request.resource.data.description.size() <= 500
+        // createdAt pode ser serverTimestamp ou timestamp
+        && (request.resource.data.createdAt == request.time || request.resource.data.createdAt is timestamp);
 
       // Atualização: não permitida (transações são imutáveis)
       allow update: if false;
