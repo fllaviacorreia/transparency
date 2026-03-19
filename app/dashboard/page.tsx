@@ -24,6 +24,7 @@ import { TransactionModal } from "@/components/dashboard/transaction-modal"
 import { TransactionsList } from "@/components/dashboard/transactions-list"
 import { DashboardCharts } from "@/components/dashboard/dashboard-charts"
 import { ShareModal } from "@/components/dashboard/share-modal"
+import { GoalSection } from "@/components/dashboard/goal-section"
 import { toast } from "sonner"
 import type { Project } from "@/types"
 
@@ -279,6 +280,19 @@ export default function DashboardPage() {
             ) : (
               <DashboardCharts transactions={transactions} totals={totals} />
             )}
+          </section>
+
+          {/* Goal Section */}
+          <section>
+            <div className="mb-4">
+              <h2 className="font-display text-xl font-semibold">
+                Meta Atual
+              </h2>
+            </div>
+            <GoalSection
+              projectId={selectedProject.id}
+              projectTitle={selectedProject.title}
+            />
           </section>
 
           {/* Transactions */}

@@ -46,3 +46,17 @@ export interface PublicTransaction {
   description: string
   createdAt: Timestamp
 }
+
+export interface Goal {
+  id: string
+  projectId: string
+  userId: string
+  title: string
+  description: string
+  link?: string
+  imageUrl?: string
+  imageName?: string
+  isActive: boolean
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}

@@ -27,9 +27,11 @@ import {
   Eye,
   AlertTriangle,
   FileText,
-  ExternalLink
+  ExternalLink,
+  Target
 } from "lucide-react"
-import type { Transaction, Project } from "@/types"
+import type { Transaction, Project, Goal } from "@/types"
+import Image from "next/image"
 
 const paymentMethodIcons = {
   pix: QrCode,
@@ -66,6 +68,7 @@ function TransparenciaContent() {
   const [project, setProject] = useState<Project | null>(null)
   const [entries, setEntries] = useState<Transaction[]>([])
   const [exits, setExits] = useState<Transaction[]>([])
+  const [activeGoal, setActiveGoal] = useState<Goal | null>(null)
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -96,6 +99,7 @@ function TransparenciaContent() {
         setProject(null)
         setEntries([])
         setExits([])
+        setActiveGoal(null)
         setError("Projeto não encontrado ou não é público")
         setLoading(false)
         return
@@ -124,6 +128,23 @@ function TransparenciaContent() {
 
       setEntries(allTransactions.filter((t) => t.type === "entrada"))
       setExits(allTransactions.filter((t) => t.type === "saida"))
+
+      // Buscar meta ativa do projeto
+      const goalsQuery = query(
+        collection(db, "goals"),
+        where("projectId", "==", projectData.id),
+        where("isActive", "==", true)
+      )
+
+      const goalsSnap = await getDocs(goalsQuery)
+      if (!goalsSnap.empty) {
+        setActiveGoal({
+          id: goalsSnap.docs[0].id,
+          ...goalsSnap.docs[0].data(),
+        } as Goal)
+      } else {
+        setActiveGoal(null)
+      }
     } catch (err) {
       console.error("Error fetching data:", err)
       setError("Erro ao buscar dados do projeto")
@@ -341,6 +362,54 @@ function TransparenciaContent() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Active Goal */}
+              {activeGoal && (
+                <Card className="mx-auto mb-6 max-w-xl border-border/50 overflow-hidden">
+                  <CardHeader className="border-b border-border/50 bg-primary/5">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                        <Target className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">Meta Atual</CardTitle>
+                        <CardDescription>Objetivo atual do projeto</CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    {activeGoal.imageUrl && (
+                      <div className="relative h-48 w-full">
+                        <Image
+                          src={activeGoal.imageUrl}
+                          alt={activeGoal.title}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold text-foreground">
+                        {activeGoal.title}
+                      </h3>
+                      <p className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap">
+                        {activeGoal.description}
+                      </p>
+                      {activeGoal.link && (
+                        <a
+                          href={activeGoal.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-4 inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                        >
+                          Saiba mais
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Transactions */}
               <div className="grid gap-6 lg:grid-cols-2">
