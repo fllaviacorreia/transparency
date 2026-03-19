@@ -1,0 +1,202 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================
+    // FUNÇÕES AUXILIARES
+    // ============================================
+
+    // Verifica se o usuário está autenticado
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Verifica se o usuário é o dono do recurso
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Verifica se os dados possuem campos obrigatórios
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    // Verifica se o valor é um número positivo
+    function isPositiveNumber(value) {
+      return value is number && value >= 0;
+    }
+
+    // Verifica se o tipo de transação é válido
+    function isValidTransactionType(type) {
+      return type == 'entrada' || type == 'saida';
+    }
+
+    // Verifica se o método de pagamento é válido
+    function isValidPaymentMethod(method) {
+      return method == 'pix' || method == 'cartao' || method == 'dinheiro';
+    }
+
+    // ============================================
+    // COLEÇÃO: users
+    // ============================================
+    match /users/{userId} {
+      // Leitura: apenas o próprio usuário pode ler seus dados
+      allow read: if isOwner(userId);
+
+      // Criação: usuário autenticado pode criar seu próprio documento
+      allow create: if isOwner(userId)
+        && hasRequiredFields(['email', 'name', 'createdAt', 'projectsCount'])
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.projectsCount == 0;
+
+      // Atualização: apenas o próprio usuário pode atualizar
+      // Restringe quais campos podem ser alterados
+      allow update: if isOwner(userId)
+        && request.resource.data.email == resource.data.email // email não pode mudar
+        && request.resource.data.createdAt == resource.data.createdAt // createdAt não pode mudar
+        && request.resource.data.projectsCount is int
+        && request.resource.data.projectsCount >= 0
+        && request.resource.data.projectsCount <= 5; // máximo de 5 projetos
+
+      // Deleção: apenas o próprio usuário pode deletar sua conta
+      allow delete: if isOwner(userId);
+    }
+
+    // ============================================
+    // COLEÇÃO: projects
+    // ============================================
+    match /projects/{projectId} {
+      // Leitura: dono pode ler todos os seus projetos
+      // OU qualquer pessoa pode ler projetos públicos (para a página de transparência)
+      allow read: if isOwner(resource.data.userId) 
+        || resource.data.isPublic == true;
+
+      // Criação: usuário autenticado pode criar projetos
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid
+        && hasRequiredFields([
+          'userId', 'title', 'description', 'publicCode', 
+          'isPublic', 'createdAt', 'updatedAt', 
+          'totalIncome', 'totalExpense', 'balance'
+        ])
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 100
+        && request.resource.data.description is string
+        && request.resource.data.description.size() <= 500
+        && request.resource.data.publicCode is string
+        && request.resource.data.publicCode.size() == 8
+        && request.resource.data.isPublic is bool
+        && request.resource.data.totalIncome == 0
+        && request.resource.data.totalExpense == 0
+        && request.resource.data.balance == 0;
+
+      // Atualização: apenas o dono pode atualizar
+      allow update: if isOwner(resource.data.userId)
+        && request.resource.data.userId == resource.data.userId // userId não pode mudar
+        && request.resource.data.publicCode == resource.data.publicCode // código não pode mudar
+        && request.resource.data.createdAt == resource.data.createdAt // createdAt não pode mudar
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 100
+        && isPositiveNumber(request.resource.data.totalIncome)
+        && isPositiveNumber(request.resource.data.totalExpense);
+
+      // Deleção: apenas o dono pode deletar
+      allow delete: if isOwner(resource.data.userId);
+    }
+
+    // ============================================
+    // COLEÇÃO: transactions
+    // ============================================
+    match /transactions/{transactionId} {
+      // Leitura: apenas o dono pode ler suas transações
+      // OU qualquer pessoa pode ler transações de projetos públicos
+      allow read: if isOwner(resource.data.userId)
+        || (
+          exists(/databases/$(database)/documents/projects/$(resource.data.projectId))
+          && get(/databases/$(database)/documents/projects/$(resource.data.projectId)).data.isPublic == true
+        );
+
+      // Criação: usuário autenticado pode criar transações
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid
+        && hasRequiredFields([
+          'projectId', 'userId', 'type', 'value', 
+          'paymentMethod', 'description', 'createdAt'
+        ])
+        // Verifica se o projeto pertence ao usuário
+        && exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId))
+        && get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.userId == request.auth.uid
+        // Validações de campos
+        && isValidTransactionType(request.resource.data.type)
+        && isPositiveNumber(request.resource.data.value)
+        && request.resource.data.value > 0 // valor deve ser maior que zero
+        && isValidPaymentMethod(request.resource.data.paymentMethod)
+        && request.resource.data.description is string
+        && request.resource.data.description.size() <= 500;
+
+      // Atualização: não permitida (transações são imutáveis)
+      allow update: if false;
+
+      // Deleção: apenas o dono pode deletar
+      allow delete: if isOwner(resource.data.userId)
+        // Verifica se o projeto ainda pertence ao usuário
+        && exists(/databases/$(database)/documents/projects/$(resource.data.projectId))
+        && get(/databases/$(database)/documents/projects/$(resource.data.projectId)).data.userId == request.auth.uid;
+    }
+
+    // ============================================
+    // COLEÇÃO: goals (metas)
+    // ============================================
+    match /goals/{goalId} {
+      // Leitura: dono pode ler suas metas
+      // OU qualquer pessoa pode ler metas de projetos públicos
+      allow read: if isOwner(resource.data.userId)
+        || (
+          exists(/databases/$(database)/documents/projects/$(resource.data.projectId))
+          && get(/databases/$(database)/documents/projects/$(resource.data.projectId)).data.isPublic == true
+        );
+
+      // Criação: usuário autenticado pode criar metas
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid
+        && hasRequiredFields([
+          'projectId', 'userId', 'title', 'description', 
+          'isActive', 'createdAt', 'updatedAt'
+        ])
+        // Verifica se o projeto pertence ao usuário
+        && exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId))
+        && get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.userId == request.auth.uid
+        // Validações de campos
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 200
+        && request.resource.data.description is string
+        && request.resource.data.description.size() <= 1000
+        && request.resource.data.isActive is bool;
+
+      // Atualização: apenas o dono pode atualizar
+      allow update: if isOwner(resource.data.userId)
+        && request.resource.data.userId == resource.data.userId // userId não pode mudar
+        && request.resource.data.projectId == resource.data.projectId // projectId não pode mudar
+        && request.resource.data.createdAt == resource.data.createdAt // createdAt não pode mudar
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 200
+        && request.resource.data.description is string
+        && request.resource.data.description.size() <= 1000;
+
+      // Deleção: apenas o dono pode deletar
+      allow delete: if isOwner(resource.data.userId);
+    }
+
+    // ============================================
+    // REGRA PADRÃO: Negar tudo não especificado
+    // ============================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
