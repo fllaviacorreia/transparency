@@ -239,6 +239,7 @@ export function usePublicGoal(projectId: string | null) {
     }
 
     const fetchGoal = async () => {
+      if (!db) return
       try {
         const q = query(
           collection(db, "goals"),
