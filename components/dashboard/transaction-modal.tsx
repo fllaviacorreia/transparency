@@ -157,7 +157,7 @@ export function TransactionModal({
 
             {/* Value */}
             <Field>
-              <FieldLabel htmlFor="value">Valor (R$)</FieldLabel>
+              <FieldLabel htmlFor="value" required>Valor (R$)</FieldLabel>
               <Input
                 id="value"
                 type="text"

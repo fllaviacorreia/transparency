@@ -120,7 +120,7 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <FieldGroup>
                 <Field>
-                  <FieldLabel htmlFor="email">E-mail</FieldLabel>
+                  <FieldLabel htmlFor="email" required>E-mail</FieldLabel>
                   <Input
                     id="email"
                     type="email"
@@ -136,7 +136,7 @@ export default function LoginPage() {
 
                 {isNewUser && (
                   <Field>
-                    <FieldLabel htmlFor="name">Nome Completo</FieldLabel>
+                    <FieldLabel htmlFor="name" required>Nome Completo</FieldLabel>
                     <Input
                       id="name"
                       type="text"
@@ -153,7 +153,7 @@ export default function LoginPage() {
 
                 <Field>
                   <div className="flex items-center justify-between">
-                    <FieldLabel htmlFor="password">Senha</FieldLabel>
+                    <FieldLabel htmlFor="password" required>Senha</FieldLabel>
                     {!isNewUser && (
                       <Link
                         href="/recuperar-senha"

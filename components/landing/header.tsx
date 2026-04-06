@@ -2,9 +2,12 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Shield } from "lucide-react"
+import { Shield, LayoutDashboard } from "lucide-react"
+import { useAuth } from "@/contexts/auth-context"
 
 export function Header() {
+  const { user, loading } = useAuth()
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -39,12 +42,25 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Button variant="ghost" asChild className="hidden sm:inline-flex">
-            <Link href="/login">Entrar</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/login">Começar Agora</Link>
-          </Button>
+          {!loading && (
+            user ? (
+              <Button asChild>
+                <Link href="/dashboard">
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
+                  Acessar Dashboard
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" asChild className="hidden sm:inline-flex">
+                  <Link href="/login">Entrar</Link>
+                </Button>
+                <Button asChild>
+                  <Link href="/login">Começar Agora</Link>
+                </Button>
+              </>
+            )
+          )}
         </div>
       </div>
     </header>

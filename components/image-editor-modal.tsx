@@ -107,20 +107,40 @@ export function ImageEditorModal({
 
     const maxW = container.clientWidth - 16
     const maxH = container.clientHeight - 16
-    const ratio = Math.min(maxW / img.width, maxH / img.height, 1)
-
-    const w = Math.floor(img.width * ratio)
-    const h = Math.floor(img.height * ratio)
+    
+    // Calculate display ratio for fitting in container
+    const displayRatio = Math.min(maxW / img.width, maxH / img.height, 1)
+    
+    // Use higher resolution for canvas to preserve quality
+    // Work at 2x display size (or original size, whichever is smaller)
+    // This gives us better quality when editing without being too heavy
+    const workingRatio = Math.min(displayRatio * 2, 1)
+    
+    const w = Math.floor(img.width * workingRatio)
+    const h = Math.floor(img.height * workingRatio)
 
     canvas.width = w
     canvas.height = h
     overlay.width = w
     overlay.height = h
+    
+    // Set canvas CSS size to display ratio for proper visual fit
+    const displayW = Math.floor(img.width * displayRatio)
+    const displayH = Math.floor(img.height * displayRatio)
+    canvas.style.width = `${displayW}px`
+    canvas.style.height = `${displayH}px`
+    overlay.style.width = `${displayW}px`
+    overlay.style.height = `${displayH}px`
 
-    setScale(ratio)
+    setScale(workingRatio)
 
     const ctx = canvas.getContext("2d")
     if (!ctx) return
+    
+    // Enable high quality rendering
+    ctx.imageSmoothingEnabled = true
+    ctx.imageSmoothingQuality = "high"
+    
     ctx.drawImage(img, 0, 0, w, h)
 
     // Save initial state
@@ -394,21 +414,63 @@ export function ImageEditorModal({
 
   const handleDownload = () => {
     const canvas = canvasRef.current
-    if (!canvas) return
+    const originalImg = originalImageRef.current
+    if (!canvas || !originalImg) return
+
+    // Create a high-resolution export canvas with original image dimensions
+    const exportCanvas = document.createElement("canvas")
+    const currentW = canvas.width
+    const currentH = canvas.height
+    
+    // Calculate the scale factor to go back to original resolution
+    // If crop was applied, we need to calculate based on current aspect ratio
+    const scaleToOriginal = originalImg.width / (originalImg.width * scale)
+    
+    // For cropped images, use the crop ratio to determine final size
+    // The current canvas might be cropped, so we scale proportionally
+    const exportW = Math.round(currentW / scale)
+    const exportH = Math.round(currentH / scale)
+    
+    // Use at least the current canvas size, but preferably larger
+    const finalW = Math.max(exportW, currentW)
+    const finalH = Math.max(exportH, currentH)
+    
+    exportCanvas.width = finalW
+    exportCanvas.height = finalH
+    
+    const exportCtx = exportCanvas.getContext("2d")
+    if (!exportCtx) return
+    
+    // Enable high quality image scaling
+    exportCtx.imageSmoothingEnabled = true
+    exportCtx.imageSmoothingQuality = "high"
+    
+    // Draw the current canvas content scaled up to export resolution
+    exportCtx.drawImage(canvas, 0, 0, currentW, currentH, 0, 0, finalW, finalH)
+
+    // Determine output format - use JPEG for photos (smaller file size, good quality)
+    // Use PNG only if the original was PNG or if transparency is needed
+    const originalName = imageName?.toLowerCase() || ""
+    const isPng = originalName.endsWith(".png")
+    const mimeType = isPng ? "image/png" : "image/jpeg"
+    const extension = isPng ? ".png" : ".jpg"
+    const quality = isPng ? undefined : 0.92 // High quality JPEG
+    
+    // Generate filename
+    const baseName = imageName?.replace(/\.[^.]+$/, "") || "comprovante-editado"
+    const fileName = `${baseName}${extension}`
 
     if (onSave) {
-      canvas.toBlob((blob) => {
+      exportCanvas.toBlob((blob) => {
         if (!blob) return
-        const file = new File([blob], imageName || "comprovante-editado.png", {
-          type: "image/png",
-        })
+        const file = new File([blob], fileName, { type: mimeType })
         onSave(file)
         onOpenChange(false)
-      }, "image/png")
+      }, mimeType, quality)
     } else {
       const link = document.createElement("a")
-      link.download = imageName || "comprovante-editado.png"
-      link.href = canvas.toDataURL("image/png")
+      link.download = fileName
+      link.href = exportCanvas.toDataURL(mimeType, quality)
       link.click()
     }
   }
@@ -422,7 +484,8 @@ export function ImageEditorModal({
 
   const handleZoomIn = () => {
     const canvas = canvasRef.current
-    if (!canvas || !originalImageRef.current) return
+    const overlay = overlayCanvasRef.current
+    if (!canvas || !overlay || !originalImageRef.current) return
     const ctx = canvas.getContext("2d")
     if (!ctx) return
     
@@ -439,11 +502,18 @@ export function ImageEditorModal({
     
     canvas.width = newW
     canvas.height = newH
-    if (overlayCanvasRef.current) {
-      overlayCanvasRef.current.width = newW
-      overlayCanvasRef.current.height = newH
-    }
+    overlay.width = newW
+    overlay.height = newH
     
+    // Update CSS display size proportionally
+    const displayScale = newScale / 2 // Maintain 2x resolution ratio
+    canvas.style.width = `${Math.floor(originalImageRef.current.width * displayScale)}px`
+    canvas.style.height = `${Math.floor(originalImageRef.current.height * displayScale)}px`
+    overlay.style.width = canvas.style.width
+    overlay.style.height = canvas.style.height
+    
+    ctx.imageSmoothingEnabled = true
+    ctx.imageSmoothingQuality = "high"
     ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height, 0, 0, newW, newH)
     setScale(newScale)
     saveState()
@@ -451,7 +521,8 @@ export function ImageEditorModal({
 
   const handleZoomOut = () => {
     const canvas = canvasRef.current
-    if (!canvas || !originalImageRef.current) return
+    const overlay = overlayCanvasRef.current
+    if (!canvas || !overlay || !originalImageRef.current) return
     const ctx = canvas.getContext("2d")
     if (!ctx) return
     
@@ -467,11 +538,18 @@ export function ImageEditorModal({
     
     canvas.width = newW
     canvas.height = newH
-    if (overlayCanvasRef.current) {
-      overlayCanvasRef.current.width = newW
-      overlayCanvasRef.current.height = newH
-    }
+    overlay.width = newW
+    overlay.height = newH
     
+    // Update CSS display size proportionally
+    const displayScale = newScale / 2
+    canvas.style.width = `${Math.floor(originalImageRef.current.width * displayScale)}px`
+    canvas.style.height = `${Math.floor(originalImageRef.current.height * displayScale)}px`
+    overlay.style.width = canvas.style.width
+    overlay.style.height = canvas.style.height
+    
+    ctx.imageSmoothingEnabled = true
+    ctx.imageSmoothingQuality = "high"
     ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height, 0, 0, newW, newH)
     setScale(newScale)
     saveState()

@@ -129,7 +129,7 @@ export function GoalModal({
         <form onSubmit={handleSubmit}>
           <FieldGroup className="py-4">
             <Field>
-              <FieldLabel htmlFor="goal-title">Título da Meta</FieldLabel>
+              <FieldLabel htmlFor="goal-title" required>Título da Meta</FieldLabel>
               <Input
                 id="goal-title"
                 placeholder="Ex: Compra de equipamentos, Reforma do espaço"
@@ -143,7 +143,7 @@ export function GoalModal({
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="goal-description">Descrição</FieldLabel>
+              <FieldLabel htmlFor="goal-description" required>Descrição</FieldLabel>
               <Textarea
                 id="goal-description"
                 placeholder="Descreva os detalhes da meta atual..."

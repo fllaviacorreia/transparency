@@ -128,7 +128,7 @@ function RedefinirSenhaContent() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <FieldGroup>
             <Field>
-              <FieldLabel htmlFor="password">Nova Senha</FieldLabel>
+              <FieldLabel htmlFor="password" required>Nova Senha</FieldLabel>
               <div className="relative">
                 <Input
                   id="password"
@@ -157,7 +157,7 @@ function RedefinirSenhaContent() {
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="confirmPassword">Confirmar Senha</FieldLabel>
+              <FieldLabel htmlFor="confirmPassword" required>Confirmar Senha</FieldLabel>
               <Input
                 id="confirmPassword"
                 type={showPassword ? "text" : "password"}

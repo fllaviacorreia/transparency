@@ -189,7 +189,7 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
               <TabsContent value="profile" className="space-y-4 pt-4">
                 <FieldGroup>
                   <Field>
-                    <FieldLabel htmlFor="name">Nome</FieldLabel>
+                    <FieldLabel htmlFor="name" required>Nome</FieldLabel>
                     <Input
                       id="name"
                       value={profileData.name}
@@ -268,7 +268,7 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
 
                   <FieldGroup>
                     <Field>
-                      <FieldLabel htmlFor="currentPassword">Senha atual</FieldLabel>
+                      <FieldLabel htmlFor="currentPassword" required>Senha atual</FieldLabel>
                       <Input
                         id="currentPassword"
                         type="password"
@@ -285,7 +285,7 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
                     </Field>
 
                     <Field>
-                      <FieldLabel htmlFor="newPassword">Nova senha</FieldLabel>
+                      <FieldLabel htmlFor="newPassword" required>Nova senha</FieldLabel>
                       <Input
                         id="newPassword"
                         type="password"
@@ -302,7 +302,7 @@ export function ProfileModal({ open, onOpenChange }: ProfileModalProps) {
                     </Field>
 
                     <Field>
-                      <FieldLabel htmlFor="confirmPassword">
+                      <FieldLabel htmlFor="confirmPassword" required>
                         Confirmar nova senha
                       </FieldLabel>
                       <Input

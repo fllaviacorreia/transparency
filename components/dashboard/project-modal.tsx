@@ -81,7 +81,7 @@ export function ProjectModal({
         <form onSubmit={handleSubmit}>
           <FieldGroup className="py-4">
             <Field>
-              <FieldLabel htmlFor="title">Titulo do Projeto</FieldLabel>
+              <FieldLabel htmlFor="title" required>Titulo do Projeto</FieldLabel>
               <Input
                 id="title"
                 placeholder="Ex: Freelance, E-commerce, Pessoal"
