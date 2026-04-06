@@ -1,8 +1,13 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Shield, TrendingUp, Eye } from "lucide-react"
+import { ArrowRight, Shield, TrendingUp, Eye, LayoutDashboard } from "lucide-react"
+import { useAuth } from "@/contexts/auth-context"
 
 export function HeroSection() {
+  const { user, loading } = useAuth()
+
   return (
     <section className="relative overflow-hidden bg-background px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-32">
       {/* Background Pattern */}
@@ -36,12 +41,23 @@ export function HeroSection() {
 
           {/* CTA Buttons */}
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button size="lg" asChild className="w-full sm:w-auto">
-              <Link href="/login">
-                Começar Gratuitamente
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+            {!loading && (
+              user ? (
+                <Button size="lg" asChild className="w-full sm:w-auto">
+                  <Link href="/dashboard">
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    Acessar Dashboard
+                  </Link>
+                </Button>
+              ) : (
+                <Button size="lg" asChild className="w-full sm:w-auto">
+                  <Link href="/login">
+                    Começar Gratuitamente
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              )
+            )}
             <Button size="lg" variant="outline" asChild className="w-full sm:w-auto">
               <Link href="/transparencia">
                 <Eye className="mr-2 h-4 w-4" />
